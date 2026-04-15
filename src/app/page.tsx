@@ -3,6 +3,7 @@
 import { Search } from "lucide-react";
 import SearchBar from "@/components/common/SearchBar";
 import { MoveRight } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -10,12 +11,30 @@ export default function Home() {
 
       {/* 1. 고정 네비게이션바 (최상단) - 사이트 이름, 마이 페이지, 로그인 */}
       <nav className="flex items-center justify-between p-6 px-12 border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="text-2xl font-black tracking-tighter">여행 돋보기</div>
+        
+        <div className="text-2xl font-black tracking-tighter">
+          여행 돋보기
+        </div>
+
         <div className="flex items-center space-x-10 text-[13px] font-bold text-slate-500">
-          <a href="#" className="hover:text-blue-600 transition-colors">MY PAGE</a>
-          <a href="#" className="border-2 border-slate-950 px-6 py-2 rounded-full text-slate-950 hover:bg-slate-950 hover:text-white transition-all">LOGIN</a>
+
+          <Link
+            href="/mypage"
+            className="hover:text-blue-600 transition-colors"
+          >
+            MY PAGE
+          </Link>
+
+          <Link
+            href="/login"
+            className="border-2 border-slate-950 px-6 py-2 rounded-full text-slate-950 hover:bg-slate-950 hover:text-white transition-all"
+          >
+            LOGIN
+          </Link>
+
         </div>
       </nav>
+
 
       {/* 2. 메인 검색바 (상단) */}
       <section className="w-full bg-white border-b border-slate-50 pt-8 pb-10 px-12">
