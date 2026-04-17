@@ -19,10 +19,11 @@ export default function Home() {
             MY PAGE
           </Link>
 
-          <Link href="/login">
-            <button className="border-2 border-slate-950 px-6 py-2 rounded-full text-slate-950 hover:bg-slate-950 hover:text-white transition-all">
-              LOGIN
-            </button>
+          <Link
+            href="/login"
+            className="border-2 border-slate-950 px-6 py-2 rounded-full text-slate-950 hover:bg-slate-950 hover:text-white transition-all"
+          >
+            LOGIN
           </Link>
         </div>
       </nav>
