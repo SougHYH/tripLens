@@ -44,3 +44,9 @@ next-env.d.ts
 CLAUDE.md
 AGENTS.md
 *.docx
+
+# Python 가상환경
+venv/
+.venv/
+__pycache__/
+*.pyc

@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 from routers import places, reviews
+
+load_dotenv()
 
 app = FastAPI(
     title="TripLens API",
@@ -12,7 +15,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # Next.js 개발 서버
+        "http://localhost:3000",
     ],
     allow_credentials=True,
     allow_methods=["*"],
