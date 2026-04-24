@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { MessageSquare, Star, MapPin, Send, ThumbsUp, ThumbsDown, GripVertical, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { getReviewAnalysisByKeyword, sendChatMessage } from "@/services/reviewService";
 import { ReviewAnalysis, ChatMessage } from "@/types";
 
-export default function ReviewSplitPage() {
+// useSearchParams()를 사용하는 컴포넌트는 Suspense로 감싸야 빌드 통과
+function ReviewContent() {
   const searchParams = useSearchParams();
   const keyword = searchParams.get("q") ?? "";
 
@@ -262,5 +263,17 @@ export default function ReviewSplitPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+export default function ReviewSplitPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen w-full items-center justify-center bg-[#F8FAFC]">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+      </div>
+    }>
+      <ReviewContent />
+    </Suspense>
   );
 }

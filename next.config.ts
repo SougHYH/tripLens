@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
-  /* config options here */
+  // Docker 컨테이너 빌드에 필요한 standalone 모드
+  output: 'standalone',
 };
 
 export default nextConfig;
