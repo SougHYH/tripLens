@@ -93,11 +93,11 @@ export default function ReviewSplitPage() {
                 <h1 className="text-5xl font-black text-slate-950 tracking-tighter">{placeName}</h1>
 
                 {/* 즐겨찾기 버튼 */}
-                <button
+                {/* <button
                   onClick={() => setIsFavorite(!isFavorite)}
                   className="p-2 rounded-full hover:bg-slate-100 transition-colors focus:outline-none"
                   aria-label="즐겨찾기 추가"
-                >
+                > */}
 
                   {/* <Bookmark
                     size={30}
@@ -108,7 +108,7 @@ export default function ReviewSplitPage() {
                       }`}
                   /> */}
 
-                  <Star 
+                  {/* <Star 
                     size={28}
                     strokeWidth={isFavorite ? 1.5 : 2}
                     className={`transition-all duration-300 ${
@@ -118,7 +118,7 @@ export default function ReviewSplitPage() {
                     }`}
                   />
 
-                </button>
+                </button> */}
               </div>
 
               <div className="flex items-center text-slate-500 font-medium text-sm">
