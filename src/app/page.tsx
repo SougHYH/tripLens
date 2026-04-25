@@ -10,24 +10,32 @@ export default function Home() {
 
       {/* 네비게이션 */}
       <nav className="flex items-center justify-between p-6 px-12 border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+
         <div className="text-2xl font-black tracking-tighter">
           여행 돋보기
         </div>
 
         <div className="flex items-center space-x-10 text-[13px] font-bold text-slate-500">
-          <Link href="/mypage" className="hover:text-blue-600 transition-colors">
+
+          <Link
+            href="/mypage"
+            className="hover:text-blue-600 transition-colors"
+          >
             MY PAGE
           </Link>
 
-          <Link href="/login">
-            <button className="border-2 border-slate-950 px-6 py-2 rounded-full text-slate-950 hover:bg-slate-950 hover:text-white transition-all">
-              LOGIN
-            </button>
+          <Link
+            href="/login"
+            className="border-2 border-slate-950 px-6 py-2 rounded-full text-slate-950 hover:bg-slate-950 hover:text-white transition-all"
+          >
+            LOGIN
           </Link>
+
         </div>
       </nav>
 
-      {/* 검색 섹션 */}
+
+      {/* 2. 메인 검색바 (상단) */}
       <section className="w-full bg-white border-b border-slate-50 pt-8 pb-10 px-12">
         <div className="max-w-4xl mx-auto flex flex-col items-center">
 
