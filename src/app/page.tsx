@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { MoveRight } from "lucide-react";
 import SearchBar from "@/components/common/SearchBar";
 import Link from "next/link";
 
