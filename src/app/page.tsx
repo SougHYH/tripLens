@@ -1,121 +1,169 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, MapPin, Bed, Utensils} from "lucide-react";
 import SearchBar from "@/components/common/SearchBar";
 import Link from "next/link";
 
+const mapNodes = [
+  {
+    id: 1,
+    type: "travel",
+    labelText: "여행지",
+    top: "55.5%",
+    left: "44.5%",
+    title: "AI 여행지 분석",
+    description: "볼거리, 분위기, 교통편 등 여행객들의 생생한 리뷰를 요약해 드려요.",
+    icon: <MapPin className="w-8 h-8 text-white" />,
+    bgColor: "bg-blue-500",
+  },
+  {
+    id: 2,
+    type: "hotel",
+    labelText: "호텔",
+    top: "51%",
+    left: "88%",
+    title: "AI 숙소 요약",
+    description: "청결도, 서비스, 부대시설 등 실제 투숙객의 핵심 평가만 모아보세요.",
+    icon: <Bed className="w-8 h-8 text-white" />,
+    bgColor: "bg-indigo-500",
+  },
+  {
+    id: 3,
+    type: "restaurant",
+    labelText: "식당",
+    top: "90%",
+    left: "60%",
+    title: "AI 맛집 검증",
+    description: "맛, 웨이팅, 추천 메뉴 등 방문자들의 진짜 후기를 한눈에 파악하세요.",
+    icon: <Utensils className="w-8 h-8 text-white" />,
+    bgColor: "bg-orange-500",
+  },
+];
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col bg-[#E0F2FE] text-slate-950 font-sans tracking-tight">
+    <main
+      className="relative flex min-h-screen flex-col font-sans tracking-tight bg-[#EFECE5] bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('/images/map10.png')" }}
+    >
+
+      {/* 스탬프 아이콘 */}
+      <div className="absolute top-[81%] left-[86%] z-50 pointer-events-none opacity-40">
+        <div className="relative flex items-center justify-center w-36 h-36 border-[6px] border-slate-900/100 rounded-2xl rotate-[-12deg]">
+          <div className="flex flex-col items-center gap-1 text-slate-900/100 font-black">
+            <Search className="w-10 h-10" strokeWidth={4} />
+            <div className="text-[14px] tracking-tighter leading-tight text-center uppercase">
+              AI 장소 리뷰<br />
+              분석 완료!<br />
+              <span className="text-[16px] text-slate-900/100">Completed</span>
+            </div>
+          </div>
+          <div className="absolute inset-1.5 border-2 border-slate-900/90 rounded-xl"></div>
+        </div>
+      </div>
+
+
 
       {/* 네비게이션 */}
-      <nav className="flex items-center justify-between p-6 px-12 border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-
-        <div className="text-2xl font-black tracking-tighter">
+      <nav className="flex items-center justify-between p-6 px-12 border-b border-[#D7D3C8] bg-[#EFECE5]/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="text-2xl font-black tracking-tighter text-slate-900">
           여행 돋보기
         </div>
 
         <div className="flex items-center space-x-10 text-[13px] font-bold text-slate-500">
-
-          <Link
-            href="/mypage"
-            className="hover:text-blue-600 transition-colors"
-          >
+          <Link href="/mypage" className="hover:text-blue-600 transition-colors">
             MY PAGE
           </Link>
-
           <Link
             href="/login"
-            className="border-2 border-slate-950 px-6 py-2 rounded-full text-slate-950 hover:bg-slate-950 hover:text-white transition-all"
+            className="border-2 border-slate-900 px-6 py-2 rounded-full text-slate-900 hover:bg-slate-900 hover:text-white transition-all"
           >
             LOGIN
           </Link>
-
         </div>
       </nav>
 
+      {/* 히어로 섹션 */}
+      <div className="relative flex-1 w-full px-12 overflow-hidden">
 
-      {/* 2. 메인 검색바 (상단) */}
-      <section className="w-full bg-white border-b border-slate-50 pt-8 pb-10 px-12">
-        <div className="max-w-4xl mx-auto flex flex-col items-center">
-
-          <h2 className="text-4xl lg:text-5xl font-black text-slate-950 tracking-tighter mb-8 text-center leading-tight">
-            궁금한 장소의 리뷰를 <br className="lg:hidden" />
-            <span className="text-blue-600 underline underline-offset-8 decoration-8 decoration-blue-100">
-              검색해보세요!
-            </span>
-          </h2>
-
-          <div className="w-full shadow-2xl shadow-blue-100/50 rounded-3xl">
-            <SearchBar />
-          </div>
+        {/* 여행지 텍스트 */}
+        <div className="absolute top-[52.5%] left-[36%] z-0">
+          <span className="text-[54px] font-black text-slate-900/20 tracking-tighter select-none">
+            여행지
+          </span>
         </div>
-      </section>
 
-      {/* 메인 히어로 */}
-      <section className="grid grid-cols-12 gap-12 px-12 py-24 max-w-[1600px] mx-auto w-full h-full items-center">
+        {/* 식당 텍스트) */}
+        <div className="absolute top-[68%] left-[58%] z-0">
+          <span className="text-[54px] font-black text-slate-900/20 tracking-tighter select-none">
+            식당
+          </span>
+        </div>
 
-        {/* 왼쪽 */}
-        <div className="col-span-12 lg:col-span-7 flex flex-col justify-center">
+        {/* 호텔 텍스트 */}
+        <div className="absolute top-[53%] left-[82%] z-0">
+          <span className="text-[54px] font-black text-slate-900/30 tracking-tighter select-none">
+            호텔
+          </span>
+        </div>
 
-          <h1 className="text-slate-950 leading-[1.1] font-black mb-10">
+        {mapNodes.map((node) => (
+          <div
+            key={node.id}
+            className="absolute z-10 group cursor-pointer"
+            style={{ top: node.top, left: node.left }}
+          >
+            <div className={`w-12 h-12 -ml-4 -mt-4 rounded-full flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110 ${node.bgColor}`}>
+              {node.icon}
+            </div>
 
-            <span className="block text-[11vw] lg:text-[140px] tracking-tight">
-              여행
-            </span>
+            {/* 툴팁 카드 */}
+            <div className="absolute bottom-full left-6 -translate-x-1/2 mb-4 w-88 opacity-0 translate-y-2 pointer-events-none transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto">
+              <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-white/50 relative">
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white/95 rotate-45 border-r border-b border-white/50"></div>
 
-            <div className="block text-[11vw] lg:text-[140px] tracking-tight flex items-center gap-4">
-              돋보기
-
-              <div className="bg-blue-600 p-4 lg:p-6 rounded-[30px] shadow-2xl shadow-blue-200 transform rotate-3 hover:rotate-0 transition-transform duration-300 inline-flex items-center justify-center">
-                <Search className="w-12 h-12 lg:w-20 lg:h-20 text-white stroke-[3]" />
+                {/* 툴팁 내용 */}
+                <div className="relative z-10">
+                  <div className={`text-sm font-bold mb-1 uppercase ${node.type === 'travel' ? 'text-blue-600' :
+                    node.type === 'hotel' ? 'text-indigo-600' : 'text-orange-600'
+                    }`}>
+                    {node.labelText}
+                  </div>
+                  <div className="text-lg font-extrabold text-slate-800 mb-2">
+                    {node.title}
+                  </div>
+                  {/* 설명 문구*/}
+                  <div className="text-lg font-medium text-slate-600 leading-relaxed break-keep">
+                    {node.description}
+                  </div>
+                </div>
               </div>
             </div>
-          </h1>
+          </div>
+        ))}
 
-          <p className="text-xl lg:text-2xl text-slate-500 font-light max-w-lg leading-relaxed border-l-4 border-blue-600 pl-6">
+        {/* 좌측 히어로 텍스트 */}
+        <div className="absolute left-10 top-1/4 z-10 flex flex-col gap-5 pointer-events-none">
+          <h1 className="text-[135px] leading-[1.05] font-black text-slate-950 tracking-tighter drop-shadow-sm">
+            여행<br />돋보기
+          </h1>
+          <p className="text-[28px] font-medium text-slate-700 ml-2 leading-relaxed">
             수백 건의 리뷰 일일이 확인하지 말고,<br />
-            AI가 분석한 <span className="font-bold text-slate-800">핵심 리뷰</span>만 확인하세요.
+            <span className="text-slate-900 font-bold">AI가 분석한 핵심 리뷰</span>만 확인하세요.
           </p>
         </div>
 
-        {/* 오른쪽 */}
-        <div className="col-span-12 lg:col-span-5 flex flex-col gap-8 pt-12 lg:pt-0">
-
-          <div className="bg-white p-10 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-50 transform transition-transform hover:-translate-y-2">
-            <span className="inline-block bg-blue-50 text-blue-600 text-xs font-bold px-3 py-1 rounded-full mb-4">
-              POPULAR
-            </span>
-
-            <p className="text-xl font-bold text-slate-800 leading-tight">
-              #명지대역 #분위기좋은 #조용한카페 <br />
-              <span className="text-slate-400 font-normal text-sm mt-2 block">
-                카페 명암 - 경기도 용인시 처인구 중부대로1299번길 12
-              </span>
-            </p>
-          </div>
-
-          <div className="bg-white p-10 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-50 lg:-ml-12 transform transition-transform hover:-translate-y-2">
-            <span className="inline-block bg-blue-50 text-blue-600 text-xs font-bold px-3 py-1 rounded-full mb-4">
-              POPULAR
-            </span>
-
-            <p className="text-xl font-bold text-slate-800 leading-tight">
-              #베이커리 #베이글맛집 #웨이팅필수 <br />
-              <span className="text-slate-400 font-normal text-sm mt-2 block">
-                코타베이글 - 경기도 용인시 처인구 성산로169번길 5
-              </span>
-            </p>
-          </div>
-
+        {/* 검색바 */}
+        <div className="absolute top-[25%] left-[53%] -translate-x-1/2 -translate-y-1/2 z-20 w-full max-w-[950px]">
+          <SearchBar />
         </div>
-      </section>
+
+      </div>
 
       {/* 푸터 */}
-      <footer className="mt-auto py-12 border-t border-slate-100 text-center text-slate-400 text-sm">
+      < footer className="w-full pb-6 text-center text-sm text-slate-500 font-medium bg-transparent z-10 relative" >
         © 2026 캡스톤디자인 3조 코더사이저
       </footer>
-
     </main>
   );
 }
