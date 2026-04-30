@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, MapPin, Bed, Utensils} from "lucide-react";
+import { Search, MapPin, Bed, Utensils, MoveRight } from "lucide-react";
 import SearchBar from "@/components/common/SearchBar";
 import Link from "next/link";
 
