@@ -1,0 +1,21 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/* 폰트 */
+:root {
+  --font-sans: "Pretendard", sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  @apply antialiased; /* 글자를 매끄럽게 */
+}
+
+/* shadcn UI가 사용하는 기본 테마 설정 (v4 방식) */
+@theme inline {
+  --font-sans: "Pretendard", sans-serif;
+  --color-background: white;
+  --color-foreground: #0f172a;
+}
