@@ -16,7 +16,15 @@ CACHE_TTL_HOURS = 24
 # ── PLACES ──────────────────────────────────────────────
 
 def upsert_place(place: dict) -> dict:
-    res = supabase.table("places").upsert(place).execute()
+    res = supabase.table("places").upsert({
+        "place_id":     place.get("id") or place.get("place_id"),
+        "name":         place.get("name", ""),
+        "address":      place.get("address", ""),
+        "rating":       place.get("rating", 0.0),
+        "review_count": place.get("reviewCount") or place.get("review_count", 0),
+        "tags":         place.get("tags", []),
+        "thumbnail_url": place.get("thumbnailUrl") or place.get("thumbnail_url"),
+    }).execute()
     return res.data[0] if res.data else None
 
 
@@ -41,7 +49,7 @@ def get_cached_review(place_id: str) -> dict:
     return res.data[0]["reviews"]
 
 
-def save_review(place_id: str, analysis: dict) -> dict:
+def save_review(place_id: str, analysis: dict, place: dict = None) -> dict:
     review_res = supabase.table("reviews").insert({
         "place_id":          place_id,
         "summary":           analysis.get("summary", ""),
@@ -51,8 +59,8 @@ def save_review(place_id: str, analysis: dict) -> dict:
         "positive_ratio":    analysis.get("positiveRatio", 0.0),
         "positive_keywords": analysis.get("positiveKeywords", []),
         "negative_keywords": analysis.get("negativeKeywords", []),
-        "rating":            analysis.get("rating", 0.0),
-        "review_count":      analysis.get("reviewCount", 0),
+        "rating":            (place or {}).get("rating", 0.0),
+        "review_count":      len(analysis.get("reviews", [])) or (place or {}).get("reviewCount", 0),
     }).execute()
 
     review = review_res.data[0]
