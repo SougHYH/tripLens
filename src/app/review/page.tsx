@@ -2,22 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { MessageSquare, Star, MapPin, Send, ThumbsUp, ThumbsDown, GripVertical, Bookmark, Check, Loader2 } from "lucide-react";
+import { MessageSquare, Star, MapPin, Send, ThumbsUp, ThumbsDown, GripVertical, Check, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getReviewAnalysisByKeyword, sendChatMessage } from "@/services/reviewService";
 import { ReviewAnalysis, ChatMessage } from "@/types";
-
-const COLORS = {
-  bg: "#EFECE5",
-  white: "#FEFDFC",
-  slate950: "#0F172A",
-  slate500: "#64748B",
-  slate100: "#F2F1EC",
-  blue600: "#1E293B",
-  blue50: "#F1F5F9",
-  amber500: "#F59E0B",
-};
 
 export default function ReviewSplitPage() {
   const searchParams = useSearchParams();
@@ -93,7 +82,7 @@ export default function ReviewSplitPage() {
     }
   };
 
-  // 스켈레톤 로딩 화면
+  // 로딩 화면
   if (isLoadingAnalysis) {
     return (
       <div className="flex flex-col h-screen w-full items-center justify-center bg-[#EFECE5]">

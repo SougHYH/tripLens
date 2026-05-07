@@ -28,9 +28,7 @@ export default function SearchBar() {
       }
 
       try {
-        // 카카오 API 키
         const KAKAO_API_KEY = "cfa3881ae9ddb68212b45677d60c85ac";
-        // 키워드 정확도 기반 검색 (최대 15개)
         const apiUrl = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(keyword)}&size=15`;
 
         const response = await fetch(apiUrl, {

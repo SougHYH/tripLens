@@ -79,10 +79,41 @@ export default function Home() {
             className="border-2 border-slate-900 px-6 py-2 rounded-full text-slate-900 hover:bg-slate-900 hover:text-white transition-all"
           >
             LOGIN
+=======
+import Link from "next/link";
+import { Search } from "lucide-react";
+import SearchBar from "@/components/common/SearchBar";
+import FavoriteButton from "@/components/FavoriteButton";
+
+export default function Home() {
+  return (
+    <main className="flex min-h-screen flex-col bg-[#E0F2FE] text-slate-950 font-sans tracking-tight">
+
+      {/* 네비게이션 */}
+      <nav className="flex items-center justify-between p-6 px-12 border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="text-2xl font-black tracking-tighter">여행 돋보기</div>
+
+        <div className="flex items-center space-x-10 text-[13px] font-bold text-slate-500">
+          <Link href="/mypage" className="hover:text-blue-600 transition-colors">
+            마이페이지
+          </Link>
+
+          {/* 임시 제작한 즐겨찾기 버튼 */}
+          <Link href="/favorites" className="hover:text-blue-600 transition-colors">
+            즐겨찾기(임시버튼)
+          </Link>
+
+          <Link
+            href="/login"
+            className="border-2 border-slate-950 px-6 py-2 rounded-full text-slate-950 hover:bg-slate-950 hover:text-white transition-all"
+          >
+            로그인
+>>>>>>> feature/favorite
           </Link>
         </div>
       </nav>
 
+<<<<<<< HEAD
       {/* 히어로 섹션 */}
       <div className="relative flex-1 w-full px-12 overflow-hidden">
 

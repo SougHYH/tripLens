@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function MyPage() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen" style={{ background: '#efe9df' }}>
       {/* 헤더 */}
@@ -42,7 +45,7 @@ export default function MyPage() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <a href="/"style={{
+            <a href="/" style={{
               padding: '8px 16px',
               color: '#9b9488',
               fontWeight: 500,
@@ -153,6 +156,62 @@ export default function MyPage() {
               </div>
             </div>
           </div>
+        </section>
+
+        {/* 즐겨찾기 이동 버튼 섹션 */}
+        <section style={{ marginBottom: '48px' }}>
+          <button
+            onClick={() => router.push('/favorites')}
+            style={{
+              width: '100%',
+              padding: '24px',
+              background: '#faf8f4',
+              borderRadius: '20px',
+              border: '1px solid #e0dbd3',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.03)';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                background: '#fef3c7',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <svg
+                  style={{ width: '24px', height: '24px' }}
+                  fill="#f59e0b"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#020617' }}>내 즐겨찾기</div>
+                <div style={{ fontSize: '14px', color: '#9b9488' }}>저장한 항목들을 확인해보세요</div>
+              </div>
+            </div>
+            <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="#9b9488" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </section>
 
         {/* 로그아웃 */}
