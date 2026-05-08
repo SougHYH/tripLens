@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Search, MapPin, Bed, Utensils } from "lucide-react";
 import SearchBar from "@/components/common/SearchBar";
 import Link from "next/link";
@@ -41,6 +42,13 @@ const mapNodes = [
 ];
 
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+
+    setIsLoggedIn(!!token);
+  }, []);
   return (
     <main
       className="relative flex min-h-screen flex-col font-sans tracking-tight bg-[#EFECE5] bg-cover bg-center bg-no-repeat"
@@ -69,15 +77,21 @@ export default function Home() {
         </div>
 
         <div className="flex items-center space-x-10 text-[13px] font-bold text-slate-500">
-          <Link href="/mypage" className="hover:text-blue-600 transition-colors">
-            MY PAGE
-          </Link>
-          <Link
-            href="/login"
-            className="border-2 border-slate-900 px-6 py-2 rounded-full text-slate-900 hover:bg-slate-900 hover:text-white transition-all"
-          >
-            LOGIN
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/mypage"
+              className="hover:text-blue-600 transition-colors"
+            >
+              MY PAGE
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="border-2 border-slate-900 px-6 py-2 rounded-full text-slate-900 hover:bg-slate-900 hover:text-white transition-all"
+            >
+              LOGIN
+            </Link>
+          )}
         </div>
       </nav>
 
@@ -121,10 +135,9 @@ export default function Home() {
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white/95 rotate-45 border-r border-b border-white/50"></div>
 
                 <div className="relative z-10">
-                  <div className={`text-sm font-bold mb-1 uppercase ${
-                    node.type === 'travel' ? 'text-blue-600' :
-                    node.type === 'hotel' ? 'text-indigo-600' : 'text-orange-600'
-                  }`}>
+                  <div className={`text-sm font-bold mb-1 uppercase ${node.type === 'travel' ? 'text-blue-600' :
+                      node.type === 'hotel' ? 'text-indigo-600' : 'text-orange-600'
+                    }`}>
                     {node.labelText}
                   </div>
                   <div className="text-lg font-extrabold text-slate-800 mb-2">
