@@ -62,8 +62,6 @@ export default function Home() {
         </div>
       </div>
 
-
-
       {/* 네비게이션 */}
       <nav className="flex items-center justify-between p-6 px-12 border-b border-[#D7D3C8] bg-[#EFECE5]/80 backdrop-blur-md sticky top-0 z-50">
         <div className="text-2xl font-black tracking-tighter text-slate-900">
@@ -79,41 +77,10 @@ export default function Home() {
             className="border-2 border-slate-900 px-6 py-2 rounded-full text-slate-900 hover:bg-slate-900 hover:text-white transition-all"
           >
             LOGIN
-=======
-import Link from "next/link";
-import { Search } from "lucide-react";
-import SearchBar from "@/components/common/SearchBar";
-import FavoriteButton from "@/components/FavoriteButton";
-
-export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col bg-[#E0F2FE] text-slate-950 font-sans tracking-tight">
-
-      {/* 네비게이션 */}
-      <nav className="flex items-center justify-between p-6 px-12 border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="text-2xl font-black tracking-tighter">여행 돋보기</div>
-
-        <div className="flex items-center space-x-10 text-[13px] font-bold text-slate-500">
-          <Link href="/mypage" className="hover:text-blue-600 transition-colors">
-            마이페이지
-          </Link>
-
-          {/* 임시 제작한 즐겨찾기 버튼 */}
-          <Link href="/favorites" className="hover:text-blue-600 transition-colors">
-            즐겨찾기(임시버튼)
-          </Link>
-
-          <Link
-            href="/login"
-            className="border-2 border-slate-950 px-6 py-2 rounded-full text-slate-950 hover:bg-slate-950 hover:text-white transition-all"
-          >
-            로그인
->>>>>>> feature/favorite
           </Link>
         </div>
       </nav>
 
-<<<<<<< HEAD
       {/* 히어로 섹션 */}
       <div className="relative flex-1 w-full px-12 overflow-hidden">
 
@@ -124,7 +91,7 @@ export default function Home() {
           </span>
         </div>
 
-        {/* 식당 텍스트) */}
+        {/* 식당 텍스트 */}
         <div className="absolute top-[68%] left-[58%] z-0">
           <span className="text-[54px] font-black text-slate-900/20 tracking-tighter select-none">
             식당
@@ -153,17 +120,16 @@ export default function Home() {
               <div className="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-white/50 relative">
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white/95 rotate-45 border-r border-b border-white/50"></div>
 
-                {/* 툴팁 내용 */}
                 <div className="relative z-10">
-                  <div className={`text-sm font-bold mb-1 uppercase ${node.type === 'travel' ? 'text-blue-600' :
+                  <div className={`text-sm font-bold mb-1 uppercase ${
+                    node.type === 'travel' ? 'text-blue-600' :
                     node.type === 'hotel' ? 'text-indigo-600' : 'text-orange-600'
-                    }`}>
+                  }`}>
                     {node.labelText}
                   </div>
                   <div className="text-lg font-extrabold text-slate-800 mb-2">
                     {node.title}
                   </div>
-                  {/* 설명 문구*/}
                   <div className="text-lg font-medium text-slate-600 leading-relaxed break-keep">
                     {node.description}
                   </div>
@@ -192,7 +158,7 @@ export default function Home() {
       </div>
 
       {/* 푸터 */}
-      < footer className="w-full pb-6 text-center text-sm text-slate-500 font-medium bg-transparent z-10 relative" >
+      <footer className="w-full pb-6 text-center text-sm text-slate-500 font-medium bg-transparent z-10 relative">
         © 2026 캡스톤디자인 3조 코더사이저
       </footer>
     </main>
