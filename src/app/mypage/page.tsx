@@ -44,7 +44,6 @@ export default function MyPage() {
             <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#020617' }}>My Page</h1>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <a href="/" style={{
               padding: '8px 16px',
               color: '#9b9488',
@@ -55,20 +54,6 @@ export default function MyPage() {
             }}>
               홈으로
             </a>
-            <button style={{
-              padding: '8px 16px',
-              background: '#1e293b',
-              color: 'white',
-              borderRadius: '8px',
-              fontWeight: 500,
-              fontSize: '14px',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'background 0.2s'
-            }}>
-              로그아웃
-            </button>
-          </div>
         </div>
       </header>
 
