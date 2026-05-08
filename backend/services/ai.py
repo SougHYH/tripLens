@@ -37,9 +37,14 @@ async def analyze_reviews(reviews: list[dict], place_name: str) -> dict:
 {review_text}
 
 아래 JSON 형식으로 분석 결과를 반환해주세요. JSON 외 다른 텍스트는 절대 포함하지 마세요.
+"summary" 필드는 반드시 아래 3가지 테마에 맞춘 3개의 문자열을 가진 배열(List)이어야 합니다.
 
 {{
-  "summary": "2~3문장으로 핵심 특징 요약 (한국어)",
+  "summary": [
+    "1단락: 장소의 전반적인 분위기 및 핵심 특징",
+    "2단락: 시설, 서비스, 청결도 등 구체적인 이용 만족도",
+    "3단락: 주차, 예약, 대기시간 등 방문 전 꼭 알아야 할 정보"
+  ],
   "tags": ["#태그1", "#태그2", "#태그3", "#태그4", "#태그5"],
   "positiveCount": 긍정 리뷰 수,
   "negativeCount": 부정 리뷰 수,

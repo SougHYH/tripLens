@@ -12,7 +12,7 @@ class SentimentBreakdown(BaseModel):
 
 class ReviewAnalysis(BaseModel):
     placeId: str
-    summary: str
+    summary: List[str]
     tags: List[str]
     sentiment: SentimentBreakdown
     rating: float

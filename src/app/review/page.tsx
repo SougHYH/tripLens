@@ -180,13 +180,53 @@ function ReviewContent() {
                   <span className="bg-slate-800 text-white p-2 rounded-lg text-sm">✨</span>
                   AI 핵심 요약
                 </h3>
-                <p className="text-slate-700 text-lg leading-relaxed font-medium whitespace-pre-line">
-                  {Array.isArray(analysis.summary)
-                    ? analysis.summary.join("\n\n")
-                    : analysis.summary}
-                </p>
+
+                <div className="space-y-8">
+                  {analysis.summary && analysis.summary.length > 0 ? (
+                    <>
+                      {/* 1단락: 장소 전반적인 분위기 및 핵심 특징 */}
+                      {analysis.summary[0] && (
+                        <div className="flex flex-col items-start gap-3">
+                          <h4 className="text-[13px] font-bold text-[#8B7B6B] bg-[#F5F1E8] w-fit px-4 py-1.5 rounded-full tracking-wide">
+                            분위기
+                          </h4>
+                          <p className="text-slate-700 text-[17px] leading-relaxed font-medium">
+                            {analysis.summary[0]}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* 2단락: 시설, 서비스, 청결도 등 구체적인 이용 만족도 */}
+                      {analysis.summary[1] && (
+                        <div className="flex flex-col items-start gap-3">
+                          <h4 className="text-[13px] font-bold text-[#8B7B6B] bg-[#F5F1E8] w-fit px-4 py-1.5 rounded-full tracking-wide">
+                            시설&서비스
+                          </h4>
+                          <p className="text-slate-700 text-[17px] leading-relaxed font-medium">
+                            {analysis.summary[1]}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* 3단락: 주차, 예약, 대기시간 등 방문 전 알아야 하는 정보 */}
+                      {analysis.summary[2] && (
+                        <div className="flex flex-col items-start gap-3">
+                          <h4 className="text-[13px] font-bold text-[#8B7B6B] bg-[#F5F1E8] w-fit px-4 py-1.5 rounded-full tracking-wide">
+                            꿀팁
+                          </h4>
+                          <p className="text-slate-700 text-[17px] leading-relaxed font-medium">
+                            {analysis.summary[2]}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-slate-400">요약 데이터를 불러오는 중입니다...</p>
+                  )}
+                </div>
+
                 {analysis.tags && (
-                  <div className="mt-8 flex flex-wrap gap-2.5">
+                  <div className="mt-10 flex flex-wrap gap-2.5 pt-8 border-t border-slate-50">
                     {analysis.tags.map((tag) => (
                       <span
                         key={tag}

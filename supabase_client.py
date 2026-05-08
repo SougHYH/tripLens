@@ -1,4 +1,5 @@
 import os
+import json
 from datetime import datetime, timezone, timedelta
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -52,7 +53,7 @@ def get_cached_review(place_id: str) -> dict:
 def save_review(place_id: str, analysis: dict, place: dict = None) -> dict:
     review_res = supabase.table("reviews").insert({
         "place_id":          place_id,
-        "summary":           analysis.get("summary", ""),
+        "summary":           json.dumps(analysis.get("summary", [])), # 배열을 JSON 문자열로 저장
         "tags":              analysis.get("tags", []),
         "positive_count":    analysis.get("positiveCount", 0),
         "negative_count":    analysis.get("negativeCount", 0),

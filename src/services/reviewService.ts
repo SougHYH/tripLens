@@ -5,7 +5,7 @@ import { ApiResponse, ReviewAnalysis, ChatMessage, ChatResponse } from "@/types"
 // 목업 데이터 (백엔드 연결 전 사용)
 // 백엔드 완성 후 USE_MOCK = false 로 변경
 // ================================
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 const MOCK_REVIEW_ANALYSIS: Record<string, ReviewAnalysis> = {
   "1": {
@@ -66,10 +66,10 @@ export async function getReviewAnalysis(placeId: string): Promise<ReviewAnalysis
     return analysis;
   }
 
-  const res = await apiClient.get<ApiResponse<ReviewAnalysis>>(
+  const res = await apiClient.get<ReviewAnalysis>(
     `/reviews/analysis/${placeId}`
   );
-  return res.data;
+  return res;
 }
 
 // ================================
@@ -83,10 +83,10 @@ export async function getReviewAnalysisByKeyword(keyword: string): Promise<Revie
     return MOCK_REVIEW_ANALYSIS["3"];
   }
 
-  const res = await apiClient.get<ApiResponse<ReviewAnalysis>>(
+  const res = await apiClient.get<ReviewAnalysis>(
     `/reviews/analysis?keyword=${encodeURIComponent(keyword)}`
   );
-  return res.data;
+  return res;
 }
 
 // ================================

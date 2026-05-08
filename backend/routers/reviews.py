@@ -25,7 +25,7 @@ async def _fetch_and_analyze(query: str) -> ReviewAnalysis:
 
     return ReviewAnalysis(
         placeId=place.get("id", query),
-        summary=analysis.get("summary", ""),
+        summary=analysis.get("summary", []),
         tags=analysis.get("tags", []),
         sentiment=SentimentBreakdown(
             positiveCount=analysis.get("positiveCount", 0),

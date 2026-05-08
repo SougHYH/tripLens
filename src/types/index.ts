@@ -46,7 +46,7 @@ export interface SentimentBreakdown {
 
 export interface ReviewAnalysis {
   placeId: string;
-  summary: string;           // AI 핵심 요약 텍스트
+  summary: string[];           // AI 핵심 요약 텍스트 (단락별 배열)
   tags: string[];            // 예: ["#분위기맛집", "#웨이팅필수"]
   sentiment: SentimentBreakdown;
   rating: number;
