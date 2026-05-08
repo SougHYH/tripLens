@@ -6,6 +6,17 @@ load_dotenv()
 
 client = ApiClient(api_key=os.getenv("OUTSCRAPER_API_KEY"))
 
+
+def _flatten(results: list) -> list:
+    """
+    Outscraper SDK는 [[item1, item2, ...]] 형태로 반환 (중첩 리스트).
+    단일 쿼리 결과를 flat list로 변환.
+    """
+    if results and isinstance(results[0], list):
+        return results[0]
+    return results
+
+
 # ================================
 # 장소 검색
 # ================================
@@ -22,8 +33,8 @@ async def search_places(keyword: str, limit: int = 5) -> list[dict]:
     )
 
     places = []
-    for item in results:
-        if not item:
+    for item in _flatten(results):
+        if not item or not isinstance(item, dict):
             continue
         places.append({
             "id": item.get("place_id", ""),
@@ -54,8 +65,8 @@ async def get_reviews(query: str, reviews_limit: int = 100) -> list[dict]:
     )
 
     reviews = []
-    for place in results:
-        if not place:
+    for place in _flatten(results):
+        if not place or not isinstance(place, dict):
             continue
         for review in place.get("reviews_data", []):
             if not review.get("review_text"):

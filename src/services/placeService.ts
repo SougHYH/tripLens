@@ -1,11 +1,11 @@
 import { apiClient } from "@/lib/apiClient";
-import { ApiResponse, Place, PlaceSearchResult } from "@/types";
+import { Place, PlaceSearchResult } from "@/types";
 
 // ================================
 // 목업 데이터 (백엔드 연결 전 사용)
 // 백엔드 완성 후 USE_MOCK = false 로 변경
 // ================================
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 const MOCK_PLACES: Place[] = [
   {
@@ -57,10 +57,9 @@ export async function searchPlaces(keyword: string): Promise<PlaceSearchResult> 
     };
   }
 
-  const res = await apiClient.get<ApiResponse<PlaceSearchResult>>(
+  return await apiClient.get<PlaceSearchResult>(
     `/places/search?keyword=${encodeURIComponent(keyword)}`
   );
-  return res.data;
 }
 
 // ================================
@@ -75,6 +74,5 @@ export async function getPlaceById(id: string): Promise<Place> {
     return place;
   }
 
-  const res = await apiClient.get<ApiResponse<Place>>(`/places/${id}`);
-  return res.data;
+  return await apiClient.get<Place>(`/places/${id}`);
 }
