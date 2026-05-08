@@ -16,7 +16,6 @@ export default function LoginPage() {
     try {
       console.log('Login attempt:', { email, password });
       await new Promise((resolve) => setTimeout(resolve, 500));
-      alert('로그인 되었습니다!');
     } catch (err: unknown) {
       setError('로그인에 실패했습니다.');
       console.error(err);

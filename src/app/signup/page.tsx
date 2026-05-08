@@ -23,7 +23,6 @@ export default function SignupPage() {
     try {
       console.log('Signup attempt:', { email, password });
       await new Promise((resolve) => setTimeout(resolve, 500));
-      alert('회원가입이 완료되었습니다!');
     } catch (err: unknown) {
       setError('회원가입에 실패했습니다.');
       console.error(err);
