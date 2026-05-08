@@ -1,0 +1,31 @@
+services:
+
+  # ── Next.js 프론트엔드 ──
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+
+  # ── FastAPI 백엔드 ──
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # 코드 변경 시 자동 반영 (개발 모드)
+      - ./backend:/app
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+    env_file:
+      - ./backend/.env

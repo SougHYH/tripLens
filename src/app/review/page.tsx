@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { MessageSquare, Star, MapPin, Send, ThumbsUp, ThumbsDown, GripVertical, Check, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { getReviewAnalysisByKeyword, sendChatMessage } from "@/services/reviewService";
 import { ReviewAnalysis, ChatMessage } from "@/types";
 
-export default function ReviewSplitPage() {
+// useSearchParams()를 사용하는 컴포넌트는 Suspense로 감싸야 빌드 통과
+function ReviewContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const placeId = searchParams.get("id") || "";
@@ -273,7 +274,6 @@ export default function ReviewSplitPage() {
             </div>
           ))}
 
-          {/* 채팅 로딩 */}
           {isSending && (
             <div className="flex items-start gap-3.5">
               <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm shadow-slate-950">
@@ -313,5 +313,20 @@ export default function ReviewSplitPage() {
       </section>
 
     </div>
+  );
+}
+
+// Suspense 래퍼 — useSearchParams() 빌드 오류 방지
+export default function ReviewSplitPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col h-screen w-full items-center justify-center bg-[#EFECE5]">
+          <Loader2 className="w-10 h-10 text-slate-600 animate-spin" />
+        </div>
+      }
+    >
+      <ReviewContent />
+    </Suspense>
   );
 }
