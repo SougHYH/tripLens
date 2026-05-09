@@ -1,6 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -21,8 +27,9 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      console.log('Signup attempt:', { email, password });
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const { error: signUpError } = await supabase.auth.signUp({ email, password });
+      if (signUpError) throw signUpError;
+      window.location.href = '/login';
     } catch (err: unknown) {
       setError('회원가입에 실패했습니다.');
       console.error(err);
