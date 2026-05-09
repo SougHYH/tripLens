@@ -2,10 +2,18 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from "@supabase/supabase-js";
 
 export default function MyPage() {
   const router = useRouter();
-
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
   return (
     <div className="min-h-screen" style={{ background: '#efe9df' }}>
       {/* 헤더 */}
@@ -44,16 +52,16 @@ export default function MyPage() {
             <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#020617' }}>My Page</h1>
           </div>
 
-            <a href="/" style={{
-              padding: '8px 16px',
-              color: '#9b9488',
-              fontWeight: 500,
-              fontSize: '14px',
-              cursor: 'pointer',
-              transition: 'color 0.2s'
-            }}>
-              홈으로
-            </a>
+          <a href="/" style={{
+            padding: '8px 16px',
+            color: '#9b9488',
+            fontWeight: 500,
+            fontSize: '14px',
+            cursor: 'pointer',
+            transition: 'color 0.2s'
+          }}>
+            홈으로
+          </a>
         </div>
       </header>
 
@@ -185,7 +193,7 @@ export default function MyPage() {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
               </div>
               <div style={{ textAlign: 'left' }}>
@@ -201,18 +209,20 @@ export default function MyPage() {
 
         {/* 로그아웃 */}
         <section>
-          <button style={{
-            width: '100%',
-            padding: '16px 24px',
-            background: '#fef2f2',
-            color: '#dc2626',
-            fontWeight: 600,
-            borderRadius: '16px',
-            border: '1px solid #fecaca',
-            cursor: 'pointer',
-            fontSize: '16px',
-            transition: 'background 0.2s'
-          }}
+          <button
+            onClick={handleLogout}
+            style={{
+              width: '100%',
+              padding: '16px 24px',
+              background: '#fef2f2',
+              color: '#dc2626',
+              fontWeight: 600,
+              borderRadius: '16px',
+              border: '1px solid #fecaca',
+              cursor: 'pointer',
+              fontSize: '16px',
+              transition: 'background 0.2s'
+            }}
             onMouseEnter={(e) => e.currentTarget.style.background = '#fee2e2'}
             onMouseLeave={(e) => e.currentTarget.style.background = '#fef2f2'}
           >
