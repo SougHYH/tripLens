@@ -52,7 +52,7 @@ def get_cached_review(place_id: str) -> dict:
 def save_review(place_id: str, analysis: dict, place: dict = None) -> dict:
     review_res = supabase.table("reviews").insert({
         "place_id":          place_id,
-        "summary":           analysis.get("summary", ""),
+        "summary":           analysis.get("summary", []),
         "tags":              analysis.get("tags", []),
         "positive_count":    analysis.get("positiveCount", 0),
         "negative_count":    analysis.get("negativeCount", 0),
@@ -70,7 +70,7 @@ def save_review(place_id: str, analysis: dict, place: dict = None) -> dict:
         "place_id":  place_id,
         "review_id": review["review_id"],
         "expires_at": expires_at,
-    }).execute()
+    }, on_conflict="place_id").execute()
 
     return review
 

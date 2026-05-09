@@ -61,7 +61,7 @@ async def get_review_analysis(place_id: str):
         if cached:
             return ReviewAnalysis(
                 placeId=place_id,
-                summary=cached.get("summary", ""),
+                summary=cached.get("summary", []),
                 tags=cached.get("tags", []),
                 sentiment=SentimentBreakdown(
                     positiveCount=cached.get("positive_count", 0),
