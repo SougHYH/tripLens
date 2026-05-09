@@ -10,6 +10,7 @@ interface KakaoPlace {
   id: string;
   place_name: string;
   address_name: string;
+  road_address_name: string;
 }
 
 export default function SearchBar() {
@@ -52,7 +53,6 @@ export default function SearchBar() {
     return () => clearTimeout(debounceTimer);
   }, [keyword]);
 
-  // 바깥쪽 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -63,29 +63,34 @@ export default function SearchBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 리스트에서 장소 클릭 시 실행
   const handleSelectPlace = (place: KakaoPlace) => {
     setIsOpen(false);
     setKeyword(place.place_name);
+    
+    const finalAddress = place.road_address_name || place.address_name || "주소 정보 없음";
+
     router.push(
-      `/review?q=${encodeURIComponent(place.place_name)}&id=${place.id}`
+      `/review?q=${encodeURIComponent(place.place_name)}&id=${place.id}&address=${encodeURIComponent(finalAddress)}`
     );
   };
 
-
+  // [핵심 수정] 엔터 키를 눌렀을 때의 동작
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!keyword.trim()) {
-      alert("검색어를 입력해주세요!");
-      return;
+    e.preventDefault(); // 기본 이동 막기
+
+    if (results.length > 0) {
+      // 검색 결과가 있다면 가장 첫 번째 항목으로 자동 이동 (엔터 누를 경우)
+      handleSelectPlace(results[0]);
+    } else {
+      // 결과가 없으면 아무데도 가지 않고 알림만 띄움
+      alert("정확한 장소명을 입력하거나 목록에서 선택해주세요.");
     }
-    router.push(`/review?q=${encodeURIComponent(keyword)}`);
   };
 
   return (
     <div className="relative w-full max-w-[950px] mx-auto" ref={dropdownRef}>
       <form
-        onSubmit={handleSearch}
+        onSubmit={handleSearch} // 여기서 이동 로직을 통제합니다.
         className="flex w-full items-center bg-white/95 backdrop-blur-md rounded-full p-5 px-10 shadow-[0_20px_60px_rgb(0,0,0,0.2)] border-4 border-[#E2DFD6] transition-all hover:shadow-[0_25px_70px_rgb(0,0,0,0.25)] relative z-[100]"
       >
         <Search className="w-10 h-10 text-slate-400 mr-5" />
@@ -99,8 +104,8 @@ export default function SearchBar() {
           className="flex-1 border-0 shadow-none focus-visible:ring-0 !text-[32px] font-bold h-20 bg-transparent text-slate-800 placeholder:text-slate-400"
         />
       </form>
-
-      {/* 자동 완성 드롭다운 */}
+	  
+      {/*자동완성 드롭다운*/}
       {isOpen && results.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-4 bg-white/98 backdrop-blur-xl rounded-[40px] shadow-[0_30px_80px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden z-[999] max-h-[500px] overflow-y-auto custom-scrollbar">
           <ul className="py-6">
@@ -118,7 +123,7 @@ export default function SearchBar() {
                     {place.place_name}
                   </h4>
                   <p className="text-base text-slate-500 mt-2 font-medium">
-                    {place.address_name}
+                    {place.road_address_name || place.address_name}
                   </p>
                 </div>
               </li>
