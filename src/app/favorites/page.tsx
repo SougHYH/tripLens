@@ -2,6 +2,14 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 import { Star, MapPin, Trash2, ArrowLeft, Check, Search, X, RotateCcw, ChevronDown, ListFilter } from "lucide-react";
 
 /** 
@@ -40,15 +48,37 @@ export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"latest" | "name">("latest");
-  // [추가] 삭제 알림 및 실행 취소 데이터 관리
+  const [userId, setUserId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ visible: boolean; lastItem: any | null }>({
     visible: false,
     lastItem: null
   });
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
-    setFavorites(saved);
+    supabase.auth.getSession().then(({ data }) => {
+      const uid = data.session?.user?.id ?? null;
+      setUserId(uid);
+
+      if (uid) {
+        fetch(`${API_URL}/favorites/${uid}`)
+          .then((r) => r.json())
+          .then((data) => {
+            const mapped = data.map((f: any) => ({
+              name: f.places?.name ?? f.place_id,
+              address: f.places?.address ?? "",
+              placeId: f.place_id,
+            }));
+            setFavorites(mapped);
+          })
+          .catch(() => {
+            const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+            setFavorites(saved);
+          });
+      } else {
+        const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+        setFavorites(saved);
+      }
+    });
   }, []);
 
   const filteredFavorites = useMemo(() => {
@@ -80,10 +110,19 @@ export default function FavoritesPage() {
   const handleDelete = (item: any) => {
     const targetName = typeof item === "string" ? item : item.name;
     const updated = favorites.filter((f) => (typeof f === "string" ? f : f.name) !== targetName);
-    
+
     setToast({ visible: true, lastItem: item });
     setFavorites(updated);
-    localStorage.setItem("favorites", JSON.stringify(updated));
+
+    if (userId && item.placeId) {
+      fetch(`${API_URL}/favorites/`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, place_id: item.placeId }),
+      });
+    } else {
+      localStorage.setItem("favorites", JSON.stringify(updated));
+    }
 
     setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
   };
@@ -93,7 +132,15 @@ export default function FavoritesPage() {
     if (!toast.lastItem) return;
     const restored = [...favorites, toast.lastItem];
     setFavorites(restored);
-    localStorage.setItem("favorites", JSON.stringify(restored));
+    if (userId && toast.lastItem.placeId) {
+      fetch(`${API_URL}/favorites/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, place_id: toast.lastItem.placeId }),
+      });
+    } else {
+      localStorage.setItem("favorites", JSON.stringify(restored));
+    }
     setToast({ visible: false, lastItem: null });
   };
 
@@ -233,7 +280,7 @@ export default function FavoritesPage() {
                   
                   <div className="mt-10 relative z-10">
                     <Link 
-                      href={`/review?q=${encodeURIComponent(name)}&address=${encodeURIComponent(address)}`}
+                      href={`/review?q=${encodeURIComponent(name)}&id=${encodeURIComponent(typeof item === "object" && item.placeId ? item.placeId : "")}&address=${encodeURIComponent(address)}`}
                       className="w-full bg-slate-800 text-white py-4 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 hover:bg-slate-950 hover:gap-4 transition-all active:scale-[0.96] shadow-sm hover:shadow-lg"
                     >
                       상세 분석 리포트 보기

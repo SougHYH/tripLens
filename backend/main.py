@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from routers import places, reviews
+from routers import places, reviews, favorites
 
 load_dotenv()
 
@@ -25,6 +25,7 @@ app.add_middleware(
 # 라우터 등록
 app.include_router(places.router, prefix="/places", tags=["places"])
 app.include_router(reviews.router, prefix="/reviews", tags=["reviews"])
+app.include_router(favorites.router, prefix="/favorites", tags=["favorites"])
 
 
 @app.get("/")

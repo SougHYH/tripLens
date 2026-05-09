@@ -21,6 +21,14 @@ import {
   getReviewAnalysisByKeyword,
   sendChatMessage,
 } from "@/services/reviewService";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 import { ReviewAnalysis, ChatMessage } from "@/types";
 
@@ -34,6 +42,7 @@ function ReviewContent() {
 
   const [placeName, setPlaceName] = useState(query || "장소 검색 중...");
   const [isFavorite, setIsFavorite] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   // ─────────────────────────────────────
   // 토스트 상태 추가
@@ -87,50 +96,63 @@ function ReviewContent() {
   // 즐겨찾기 초기 로드
   // ─────────────────────────────────────
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+    supabase.auth.getSession().then(({ data }) => {
+      const uid = data.session?.user?.id ?? null;
+      setUserId(uid);
 
-    const exists = saved.some(
-      (f: any) =>
-        (typeof f === "string" ? f : f.name) === query
-    );
-
-    setIsFavorite(exists);
-  }, [query]);
+      if (uid && placeId) {
+        fetch(`${API_URL}/favorites/${uid}`)
+          .then((r) => r.json())
+          .then((data) => {
+            const exists = data.some((f: any) => f.place_id === placeId);
+            setIsFavorite(exists);
+          })
+          .catch(() => {
+            const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+            setIsFavorite(saved.some((f: any) => (typeof f === "string" ? f : f.name) === query));
+          });
+      } else {
+        const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+        setIsFavorite(saved.some((f: any) => (typeof f === "string" ? f : f.name) === query));
+      }
+    });
+  }, [query, placeId]);
 
   // ─────────────────────────────────────
   // 즐겨찾기 토글
   // ─────────────────────────────────────
-  const toggleFavorite = () => {
-    const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+  const toggleFavorite = async () => {
+    const currentPlaceId = analysis?.placeId || placeId || "";
 
-    let updated = [];
-
-    const validAddress =
-      address && address !== "undefined"
-        ? address
-        : "주소 정보가 없습니다.";
-
-    if (isFavorite) {
-      updated = saved.filter(
-        (f: any) =>
-          (typeof f === "string" ? f : f.name) !== query
-      );
-
-      showToast("즐겨찾기가 취소되었습니다.");
+    if (userId && currentPlaceId) {
+      if (isFavorite) {
+        await fetch(`${API_URL}/favorites/`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: userId, place_id: currentPlaceId }),
+        });
+        showToast("즐겨찾기가 취소되었습니다.");
+      } else {
+        await fetch(`${API_URL}/favorites/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: userId, place_id: currentPlaceId }),
+        });
+        showToast("즐겨찾기에 추가되었습니다.");
+      }
     } else {
-      updated = [
-        ...saved,
-        {
-          name: query,
-          address: validAddress,
-          placeId: placeId || analysis?.placeId || "",
-        },
-      ];
-
-      showToast("즐겨찾기에 추가되었습니다.");
+      const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
+      const validAddress = address && address !== "undefined" ? address : "주소 정보가 없습니다.";
+      let updated = [];
+      if (isFavorite) {
+        updated = saved.filter((f: any) => (typeof f === "string" ? f : f.name) !== query);
+        showToast("즐겨찾기가 취소되었습니다.");
+      } else {
+        updated = [...saved, { name: query, address: validAddress, placeId: currentPlaceId }];
+        showToast("즐겨찾기에 추가되었습니다.");
+      }
+      localStorage.setItem("favorites", JSON.stringify(updated));
     }
-
-    localStorage.setItem("favorites", JSON.stringify(updated));
 
     setIsFavorite(!isFavorite);
   };
