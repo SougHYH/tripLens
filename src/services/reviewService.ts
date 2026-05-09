@@ -95,7 +95,8 @@ export async function getReviewAnalysisByKeyword(keyword: string): Promise<Revie
 // ================================
 export async function sendChatMessage(
   placeId: string,
-  messages: ChatMessage[]
+  messages: ChatMessage[],
+  userId?: string
 ): Promise<string> {
   if (USE_MOCK) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -109,6 +110,18 @@ export async function sendChatMessage(
   const res = await apiClient.post<ChatResponse>("/reviews/chat", {
     placeId,
     messages,
+    userId,
   });
   return res.message;
+}
+
+// ================================
+// 이전 대화 기록 조회
+// GET /reviews/chat/history
+// ================================
+export async function getChatHistory(userId: string, placeId: string): Promise<ChatMessage[]> {
+  const res = await apiClient.get<{ role: string; content: string }[]>(
+    `/reviews/chat/history?user_id=${encodeURIComponent(userId)}&place_id=${encodeURIComponent(placeId)}`
+  );
+  return res.map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
 }

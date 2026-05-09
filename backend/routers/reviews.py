@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from models.review import ReviewAnalysis, ChatRequest, ChatResponse, SentimentBreakdown
 from services.scraper import get_reviews, search_places
 from services.ai import analyze_reviews, chat_about_place
-from db import get_cached_review, save_review, upsert_place
+from db import get_cached_review, save_review, upsert_place, get_or_create_qa_session, save_qa_message, get_qa_messages
 
 router = APIRouter()
 
@@ -107,6 +107,18 @@ async def get_review_analysis_by_keyword(keyword: str = Query(..., description="
         raise HTTPException(status_code=500, detail=f"리뷰 분석 중 오류 발생: {str(e)}")
 
 
+@router.get("/chat/history")
+async def get_chat_history(user_id: str, place_id: str):
+    """
+    유저의 특정 장소 대화 기록을 반환합니다.
+    GET /reviews/chat/history?user_id=...&place_id=...
+    """
+    try:
+        return get_qa_messages(user_id, place_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"대화 기록 조회 중 오류 발생: {str(e)}")
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """
@@ -114,14 +126,20 @@ async def chat(request: ChatRequest):
     POST /reviews/chat
     """
     try:
-        # 리뷰 수집
         reviews = await get_reviews(request.placeId)
-
-        # 채팅 메시지 변환
         messages = [{"role": m.role, "content": m.content} for m in request.messages]
-
-        # AI 응답 생성
         reply = await chat_about_place(reviews, request.placeId, messages)
+
+        if request.userId:
+            try:
+                session_id = get_or_create_qa_session(request.userId, request.placeId)
+                last_user_msg = next((m for m in reversed(request.messages) if m.role == "user"), None)
+                if last_user_msg:
+                    save_qa_message(session_id, "user", last_user_msg.content)
+                save_qa_message(session_id, "assistant", reply)
+            except Exception:
+                pass
+
         return ChatResponse(message=reply)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"채팅 처리 중 오류 발생: {str(e)}")

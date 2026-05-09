@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 
 class SentimentBreakdown(BaseModel):
@@ -28,6 +28,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     placeId: str
     messages: List[ChatMessage]
+    userId: Optional[str] = None
 
 
 class ChatResponse(BaseModel):

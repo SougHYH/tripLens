@@ -280,7 +280,7 @@ export default function FavoritesPage() {
                   
                   <div className="mt-10 relative z-10">
                     <Link 
-                      href={`/review?q=${encodeURIComponent(name)}&id=${encodeURIComponent(typeof item === "object" && item.placeId ? item.placeId : "")}&address=${encodeURIComponent(address)}`}
+                      href={`/review?q=${encodeURIComponent(name)}&id=${encodeURIComponent(typeof item === "object" && item.placeId ? item.placeId : "")}&address=${encodeURIComponent(address)}&from=favorites`}
                       className="w-full bg-slate-800 text-white py-4 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 hover:bg-slate-950 hover:gap-4 transition-all active:scale-[0.96] shadow-sm hover:shadow-lg"
                     >
                       상세 분석 리포트 보기

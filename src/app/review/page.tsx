@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import {
   getReviewAnalysisByKeyword,
   sendChatMessage,
+  getChatHistory,
 } from "@/services/reviewService";
 import { createClient } from "@supabase/supabase-js";
 
@@ -39,6 +40,7 @@ function ReviewContent() {
   const query = searchParams.get("q") || "";
   const placeId = searchParams.get("id") || "";
   const address = searchParams.get("address") || "";
+  const fromFavorites = searchParams.get("from") === "favorites";
 
   const [placeName, setPlaceName] = useState(query || "장소 검색 중...");
   const [isFavorite, setIsFavorite] = useState(false);
@@ -183,6 +185,18 @@ function ReviewContent() {
     fetchAnalysis();
   }, [query]);
 
+  // ── 이전 대화 기록 로드 ──
+  useEffect(() => {
+    if (!userId || !analysis?.placeId || !fromFavorites) return;
+    getChatHistory(userId, analysis.placeId)
+      .then((history) => {
+        if (history.length > 0) {
+          setMessages((prev) => [...prev, ...history]);
+        }
+      })
+      .catch(() => {});
+  }, [userId, analysis?.placeId]);
+
   // ── 채팅 자동 스크롤 ──
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({
@@ -207,12 +221,12 @@ function ReviewContent() {
     setIsSending(true);
 
     try {
-      const targetPlaceId =
-        placeId || analysis?.placeId || query;
+      const targetPlaceId = analysis?.placeId || placeId || query;
 
       const reply = await sendChatMessage(
         targetPlaceId,
-        updatedMessages
+        updatedMessages,
+        userId ?? undefined
       );
 
       setMessages((prev) => [

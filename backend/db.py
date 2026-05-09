@@ -104,6 +104,58 @@ def delete_favorite(user_id: str, place_id: str) -> None:
     }).execute()
 
 
+# ── QA CHAT ──────────────────────────────────────────────
+
+def get_or_create_qa_session(user_id: str, place_id: str) -> int:
+    res = (
+        supabase.table("qa_sessions")
+        .select("session_id")
+        .eq("user_id", user_id)
+        .eq("place_id", place_id)
+        .order("started_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    if res.data:
+        return res.data[0]["session_id"]
+    res = supabase.table("qa_sessions").insert({
+        "user_id":  user_id,
+        "place_id": place_id,
+    }).execute()
+    return res.data[0]["session_id"]
+
+
+def save_qa_message(session_id: int, role: str, content: str) -> None:
+    supabase.table("qa_messages").insert({
+        "session_id": session_id,
+        "role":       role,
+        "content":    content,
+    }).execute()
+
+
+def get_qa_messages(user_id: str, place_id: str) -> list:
+    session_res = (
+        supabase.table("qa_sessions")
+        .select("session_id")
+        .eq("user_id", user_id)
+        .eq("place_id", place_id)
+        .order("started_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    if not session_res.data:
+        return []
+    session_id = session_res.data[0]["session_id"]
+    msg_res = (
+        supabase.table("qa_messages")
+        .select("role, content")
+        .eq("session_id", session_id)
+        .order("sent_at")
+        .execute()
+    )
+    return msg_res.data or []
+
+
 # ── PROFILES ─────────────────────────────────────────────
 
 def get_profile(user_id: str) -> dict:
