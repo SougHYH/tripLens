@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from models.review import ReviewAnalysis, ChatRequest, ChatResponse, SentimentBreakdown
 from services.scraper import get_reviews, search_places
 from services.ai import analyze_reviews, chat_about_place
+from db import get_cached_review, save_review, upsert_place
 
 router = APIRouter()
 
@@ -20,8 +21,16 @@ async def _fetch_and_analyze(query: str) -> ReviewAnalysis:
     places = await search_places(query, limit=1)
     place = places[0] if places else {}
 
-    # 3. AI 분석
+    # 3. 장소 DB 저장
+    if place:
+        upsert_place(place)
+
+    # 4. AI 분석
     analysis = await analyze_reviews(reviews, query)
+
+    # 5. 분석 결과 DB 저장
+    place_id = place.get("id", query)
+    save_review(place_id, analysis, place)
 
     return ReviewAnalysis(
         placeId=place.get("id", query),
@@ -45,9 +54,26 @@ async def get_review_analysis(place_id: str):
     """
     장소 ID로 AI 리뷰 분석 결과를 반환합니다.
     GET /reviews/analysis/{place_id}
-    TODO: Supabase 연결 후 캐시 조회 추가
+    캐시 있으면 DB에서 반환, 없으면 AI 분석 후 저장
     """
     try:
+        cached = get_cached_review(place_id)
+        if cached:
+            return ReviewAnalysis(
+                placeId=place_id,
+                summary=cached.get("summary", ""),
+                tags=cached.get("tags", []),
+                sentiment=SentimentBreakdown(
+                    positiveCount=cached.get("positive_count", 0),
+                    negativeCount=cached.get("negative_count", 0),
+                    positiveRatio=cached.get("positive_ratio", 0),
+                    positiveKeywords=cached.get("positive_keywords", []),
+                    negativeKeywords=cached.get("negative_keywords", []),
+                ),
+                rating=cached.get("rating", 0.0),
+                reviewCount=cached.get("review_count", 0),
+                analyzedAt=cached.get("analyzed_at", ""),
+            )
         return await _fetch_and_analyze(place_id)
     except HTTPException:
         raise

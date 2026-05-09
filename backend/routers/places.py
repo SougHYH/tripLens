@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from models.place import Place, PlaceSearchResult
 from services.scraper import search_places
+from db import get_place as db_get_place, upsert_place
 
 router = APIRouter()
 
@@ -24,12 +25,25 @@ async def get_place(place_id: str):
     """
     장소 ID로 단건 조회합니다.
     GET /places/{place_id}
-    TODO: Supabase DB 연결 후 캐시된 데이터 조회로 교체
+    DB 캐시 있으면 반환, 없으면 외부 API 조회 후 저장
     """
     try:
+        cached = db_get_place(place_id)
+        if cached:
+            return Place(
+                id=cached["place_id"],
+                name=cached["name"],
+                address=cached["address"],
+                category="",
+                rating=cached.get("rating", 0.0),
+                reviewCount=cached.get("review_count", 0),
+                tags=cached.get("tags") or [],
+                thumbnailUrl=cached.get("thumbnail_url"),
+            )
         places_data = await search_places(place_id, limit=1)
         if not places_data:
             raise HTTPException(status_code=404, detail="장소를 찾을 수 없습니다.")
+        upsert_place(places_data[0])
         return Place(**places_data[0])
     except HTTPException:
         raise
