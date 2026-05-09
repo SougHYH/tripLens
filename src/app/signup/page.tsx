@@ -31,9 +31,22 @@ export default function SignupPage() {
       if (signUpError) throw signUpError;
       window.location.href = '/login';
     } catch (err: unknown) {
-      setError('회원가입에 실패했습니다.');
-      console.error(err);
-    } finally {
+  console.error(err);
+
+  if (err instanceof Error) {
+    if (err.message.includes('User already registered')) {
+      setError('이미 가입된 이메일입니다.');
+    } else if (err.message.includes('Password')) {
+      setError('비밀번호는 6자 이상이어야 합니다.');
+    } else if (err.message.includes('Invalid email')) {
+      setError('올바른 이메일 형식이 아닙니다.');
+    } else {
+      setError(err.message);
+    }
+  } else {
+    setError('회원가입에 실패했습니다.');
+  }
+} finally {
       setIsLoading(false);
     }
   };
