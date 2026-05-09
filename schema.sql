@@ -16,7 +16,7 @@ CREATE TABLE places (
 CREATE TABLE reviews (
     review_id         BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     place_id          TEXT NOT NULL REFERENCES places(place_id) ON DELETE CASCADE,
-    summary           TEXT NOT NULL,
+    summary           TEXT[] NOT NULL,
     tags              TEXT[],
     positive_count    INT NOT NULL DEFAULT 0,
     negative_count    INT NOT NULL DEFAULT 0,
