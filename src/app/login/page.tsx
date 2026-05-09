@@ -117,6 +117,7 @@ export default function LoginPage() {
             <div className="space-y-2.5 mt-6">
               <button
                 type="button"
+                onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/` } })}
                 className="w-full px-4 py-3 border border-[#e0dbd3] bg-white hover:bg-[#f5f2ed] text-slate-900 rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2.5"
               >
                 <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24">
@@ -130,6 +131,7 @@ export default function LoginPage() {
 
               <button
                 type="button"
+                onClick={() => supabase.auth.signInWithOAuth({ provider: 'kakao', options: { redirectTo: `${window.location.origin}/` } })}
                 className="w-full px-4 py-3 bg-[#FEE500] hover:bg-[#f5dc00] text-[#3C1E1E] rounded-2xl font-semibold text-sm transition-colors flex items-center justify-center gap-2.5"
               >
                 <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="#3C1E1E">
