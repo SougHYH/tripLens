@@ -1,15 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from "@supabase/supabase-js";
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
 export default function MyPage() {
   const router = useRouter();
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const [email, setEmail] = useState('');
+  const [joinedAt, setJoinedAt] = useState('');
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const user = data.session?.user;
+      if (!user) { router.push('/login'); return; }
+      setEmail(user.email ?? '');
+      const date = new Date(user.created_at);
+      setJoinedAt(`${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`);
+    });
+  }, []);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/login");
@@ -103,13 +117,13 @@ export default function MyPage() {
               {/* 프로필 정보 */}
               <div style={{ flex: 1, minWidth: '200px' }}>
                 <h2 style={{ fontSize: '28px', fontWeight: 900, color: '#020617', marginBottom: '8px' }}>
-                  User Profile
+                  {email.split('@')[0]}
                 </h2>
                 <p style={{ color: '#334155', fontWeight: 500, marginBottom: '16px' }}>
-                  example@email.com
+                  {email}
                 </p>
                 <p style={{ fontSize: '14px', color: '#9b9488', marginBottom: '24px' }}>
-                  계정이 2026년부터 활성화되어 있습니다
+                  {joinedAt ? `${joinedAt}에 가입하셨습니다` : ''}
                 </p>
               </div>
 
