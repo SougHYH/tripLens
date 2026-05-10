@@ -76,15 +76,12 @@ export default function SearchBar() {
 
   // [핵심 수정] 엔터 키를 눌렀을 때의 동작
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault(); // 기본 이동 막기
+    e.preventDefault();
 
-    if (results.length > 0) {
-      // 검색 결과가 있다면 가장 첫 번째 항목으로 자동 이동 (엔터 누를 경우)
-      handleSelectPlace(results[0]);
-    } else {
-      // 결과가 없으면 아무데도 가지 않고 알림만 띄움
-      alert("정확한 장소명을 입력하거나 목록에서 선택해주세요.");
-    }
+    if (!keyword.trim()) return;
+
+    setIsOpen(false);
+    router.push(`/search?q=${encodeURIComponent(keyword.trim())}`);
   };
 
   return (
