@@ -11,7 +11,14 @@ interface KakaoPlace {
   address_name: string;
   road_address_name: string;
   category_group_name: string;
+  distance: string;
 }
+
+const formatDistance = (meters: string) => {
+  const m = parseInt(meters, 10);
+  if (!m) return null;
+  return m < 1000 ? `${m}m` : `${(m / 1000).toFixed(1)}km`;
+};
 
 function SearchResultContent() {
   const searchParams = useSearchParams();
@@ -21,21 +28,45 @@ function SearchResultContent() {
   const [results, setResults] = useState<KakaoPlace[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [keyword, setKeyword] = useState(query);
+  const [sort, setSort] = useState<"accuracy" | "distance">("accuracy");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationError, setLocationError] = useState(false);
+
+  const handleSortChange = (value: "accuracy" | "distance") => {
+    if (value === "distance" && !coords) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          setLocationError(false);
+          setSort(value);
+        },
+        () => setLocationError(true)
+      );
+    } else {
+      setSort(value);
+    }
+  };
 
   useEffect(() => {
     if (!query.trim()) return;
 
     setIsLoading(true);
 
-    fetch(
-      `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(query)}&size=15`,
-      { headers: { Authorization: "KakaoAK cfa3881ae9ddb68212b45677d60c85ac" } }
-    )
+    const url = new URL("https://dapi.kakao.com/v2/local/search/keyword.json");
+    url.searchParams.set("query", query);
+    url.searchParams.set("size", "15");
+    url.searchParams.set("sort", sort);
+    if (sort === "distance" && coords) {
+      url.searchParams.set("x", String(coords.lng));
+      url.searchParams.set("y", String(coords.lat));
+    }
+
+    fetch(url.toString(), { headers: { Authorization: "KakaoAK cfa3881ae9ddb68212b45677d60c85ac" } })
       .then((r) => r.json())
       .then((data) => setResults(data.documents || []))
       .catch(() => setResults([]))
       .finally(() => setIsLoading(false));
-  }, [query]);
+  }, [query, sort, coords]);
 
   const handleSelect = (place: KakaoPlace) => {
     const finalAddress = place.road_address_name || place.address_name || "주소 정보 없음";
@@ -79,11 +110,38 @@ function SearchResultContent() {
       {/* 결과 영역 */}
       <div className="max-w-3xl mx-auto px-6 py-10">
         {/* 검색어 헤더 */}
-        <div className="mb-8">
-          <p className="text-sm font-bold text-slate-400 mb-1">검색 결과</p>
-          <h1 className="text-3xl font-black text-slate-950 tracking-tighter">
-            '{query}'
-          </h1>
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <p className="text-sm font-bold text-slate-400 mb-1">검색 결과</p>
+            <h1 className="text-3xl font-black text-slate-950 tracking-tighter">
+              '{query}'
+            </h1>
+          </div>
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center bg-white rounded-full border border-[#F2F1EC] p-1 shadow-sm">
+              <button
+                onClick={() => handleSortChange("accuracy")}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+                  sort === "accuracy" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                관련도순
+              </button>
+              <button
+                onClick={() => handleSortChange("distance")}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+                  sort === "distance" ? "bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                거리순
+              </button>
+            </div>
+            {locationError && (
+              <p className="text-[11px] text-red-400 font-medium">
+                위치 권한을 허용해야 거리순 정렬이 가능합니다.
+              </p>
+            )}
+          </div>
         </div>
 
         {/* 로딩 */}
@@ -123,9 +181,16 @@ function SearchResultContent() {
                       {place.category_group_name}
                     </span>
                   )}
-                  <p className="text-sm text-slate-400 mt-2 font-medium truncate">
-                    {place.road_address_name || place.address_name}
-                  </p>
+                  <div className="flex items-center gap-3 mt-2">
+                    <p className="text-sm text-slate-400 font-medium truncate">
+                      {place.road_address_name || place.address_name}
+                    </p>
+                    {sort === "distance" && formatDistance(place.distance) && (
+                      <span className="text-[11px] font-bold text-blue-500 bg-blue-50 px-2.5 py-1 rounded-full flex-shrink-0">
+                        현위치에서 {formatDistance(place.distance)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </li>
             ))}
