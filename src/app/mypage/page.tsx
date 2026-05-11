@@ -13,6 +13,7 @@ export default function MyPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [joinedAt, setJoinedAt] = useState('');
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -20,158 +21,133 @@ export default function MyPage() {
       if (!user) { router.push('/login'); return; }
       setEmail(user.email ?? '');
       const date = new Date(user.created_at);
-      setJoinedAt(`${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`);
+      setJoinedAt(
+        `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
+      );
     });
   }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/login");
+    setShowToast(true);
+    setTimeout(() => { router.push("/"); }, 400);
   };
   return (
-    <div className="min-h-screen" style={{ background: '#efe9df' }}>
-      {/* 헤더 */}
-      <header style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        background: 'rgba(250,248,244,0.95)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid #e0dbd3'
-      }}>
-        <div style={{
-          maxWidth: '1152px',
-          margin: '0 auto',
-          padding: '0 24px',
-          height: '64px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: '#1e293b',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="white" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#020617' }}>My Page</h1>
+    <div className="min-h-screen" style={{ background: '#f6f2eb' }}>
+      {/* 로그아웃 토스트 */}
+      {showToast && (
+        <div className="fixed inset-0 z-50 flex items-start pt-24 justify-center pointer-events-none">
+          <div className="px-8 py-4 rounded-2xl shadow-lg bg-[#1e293b] text-[#faf8f4] text-base font-medium animate-fade-in">
+            로그아웃되었습니다.
           </div>
-
-          <a href="/" style={{
-            padding: '8px 16px',
-            color: '#9b9488',
-            fontWeight: 500,
-            fontSize: '14px',
-            cursor: 'pointer',
-            transition: 'color 0.2s'
-          }}>
-            홈으로
-          </a>
         </div>
-      </header>
+      )}
+      {/* 헤더 */}
+      <nav className="flex items-center p-6 px-12 border-b border-[#D7D3C8] bg-[#EFECE5]/80 backdrop-blur-md sticky top-0 z-50">
+        <a href="/" className="text-2xl font-black tracking-tighter text-slate-900" style={{ textDecoration: 'none' }}>
+          여행 돋보기
+        </a>
+      </nav>
 
       {/* 메인 콘텐츠 */}
       <main style={{ maxWidth: '1152px', margin: '0 auto', padding: '32px 24px 48px' }}>
-        {/* 프로필 영역 */}
-        <section style={{ marginBottom: '48px' }}>
+        {/* 페이지 제목 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
           <div style={{
-            background: '#faf8f4',
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+            background: '#1e293b',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="white" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#020617' }}>My Page</h1>
+        </div>
+        {/* 프로필 영역 */}
+        <section style={{ marginBottom: '32px' }}>
+          <div style={{
+            background: 'transparent',
             borderRadius: '24px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.06)',
-            border: '1px solid #e0dbd3',
-            padding: '32px'
+            padding: '24px 24px'
           }}>
             <div style={{
               display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'flex-start',
-              gap: '24px'
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textAlign: 'center'
             }}>
               {/* 프로필 아이콘 */}
               <div style={{
-                width: '96px',
-                height: '96px',
+                width: '82px',
+                height: '82px',
                 borderRadius: '50%',
-                background: 'linear-gradient(to bottom right, #d6cfc3, #b8b0a2)',
+                background: 'linear-gradient(to bottom right, #b7aea0, #978d7f)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                flexShrink: 0
+                boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
+                marginBottom: '16px'
               }}>
-                <svg style={{ width: '48px', height: '48px' }} fill="none" stroke="#5a5347" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <svg
+                  style={{ width: '42px', height: '42px' }}
+                  fill="none"
+                  stroke="#f5f1ea"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
                 </svg>
               </div>
 
-              {/* 프로필 정보 */}
-              <div style={{ flex: 1, minWidth: '200px' }}>
-                <h2 style={{ fontSize: '28px', fontWeight: 900, color: '#020617', marginBottom: '8px' }}>
-                  {email.split('@')[0]}
-                </h2>
-                <p style={{ color: '#334155', fontWeight: 500, marginBottom: '16px' }}>
-                  {email}
-                </p>
-                <p style={{ fontSize: '14px', color: '#9b9488', marginBottom: '24px' }}>
-                  {joinedAt ? `${joinedAt}에 가입하셨습니다` : ''}
-                </p>
-              </div>
-
-              {/* 상태 배지 */}
-              <div style={{
-                display: 'inline-flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '16px',
-                background: '#f0fdf4',
-                borderRadius: '16px',
-                border: '1px solid #bbf7d0'
+              {/* 닉네임 */}
+              <h2 style={{
+                fontSize: '28px',
+                fontWeight: 900,
+                color: '#020617',
+                marginBottom: '6px'
               }}>
-                <span style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '4px 12px',
-                  borderRadius: '9999px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  background: '#dcfce7',
-                  color: '#166534'
-                }}>
-                  <span style={{
-                    width: '8px',
-                    height: '8px',
-                    background: '#16a34a',
-                    borderRadius: '50%',
-                    marginRight: '6px'
-                  }} />
-                  활성 회원
-                </span>
-                <p style={{ fontSize: '12px', color: '#15803d', fontWeight: 500 }}>
-                  정상 이용 중
-                </p>
-              </div>
+                {email.split('@')[0]}
+              </h2>
+
+              {/* 이메일 */}
+              <p style={{
+                color: '#475569',
+                fontWeight: 500,
+                marginBottom: '8px',
+                fontSize: '15px'
+              }}>
+                {email}
+              </p>
+
+              {/* 가입일 */}
+              <p style={{
+                fontSize: '14px',
+                color: '#9b9488',
+                letterSpacing: '0.3px'
+              }}>
+                가입일 {joinedAt}
+              </p>
             </div>
           </div>
         </section>
 
         {/* 즐겨찾기 이동 버튼 섹션 */}
-        <section style={{ marginBottom: '48px' }}>
+        <section style={{ marginBottom: '24px' }}>
           <button
             onClick={() => router.push('/favorites')}
             style={{
               width: '100%',
-              padding: '24px',
+              padding: '18px 22px',
               background: '#faf8f4',
               borderRadius: '20px',
               border: '1px solid #e0dbd3',
@@ -227,20 +203,91 @@ export default function MyPage() {
             onClick={handleLogout}
             style={{
               width: '100%',
-              padding: '16px 24px',
-              background: '#fef2f2',
-              color: '#dc2626',
-              fontWeight: 600,
-              borderRadius: '16px',
-              border: '1px solid #fecaca',
+              padding: '18px 22px',
+              background: '#faf8f4',
+              borderRadius: '20px',
+              border: '1px solid #e0dbd3',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
               cursor: 'pointer',
-              fontSize: '16px',
-              transition: 'background 0.2s'
+              transition: 'all 0.2s',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = '#fee2e2'}
-            onMouseLeave={(e) => e.currentTarget.style.background = '#fef2f2'}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.03)';
+            }}
           >
-            로그아웃
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+
+              {/* 아이콘 */}
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                background: '#fce8e6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <svg
+                  style={{ width: '22px', height: '22px' }}
+                  fill="none"
+                  stroke="#c24135"
+                  strokeWidth={2.2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17 16l4-4m0 0l-4-4m4 4H9"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13 20H6a2 2 0 01-2-2V6a2 2 0 012-2h7"
+                  />
+                </svg>
+              </div>
+
+              {/* 텍스트 */}
+              <div style={{ textAlign: 'left' }}>
+                <div style={{
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  color: '#020617'
+                }}>
+                  로그아웃
+                </div>
+
+                <div style={{
+                  fontSize: '14px',
+                  color: '#9b9488'
+                }}>
+                  안전하게 로그아웃합니다
+                </div>
+              </div>
+            </div>
+
+            {/* 화살표 */}
+            <svg
+              style={{ width: '20px', height: '20px' }}
+              fill="none"
+              stroke="#9b9488"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
           </button>
         </section>
       </main>

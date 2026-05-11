@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showToast, setShowToast] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +23,8 @@ export default function LoginPage() {
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
       if (signInError) throw signInError;
-      window.location.href = '/';
+      setShowToast(true);
+      setTimeout(() => { window.location.href = '/'; }, 400);
     } catch (err: unknown) {
       setError('로그인에 실패했습니다.');
       console.error(err);
@@ -33,7 +35,13 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#efe9df]">
-
+      {showToast && (
+        <div className="fixed inset-0 z-50 flex items-start pt-24 justify-center pointer-events-none">
+          <div className="px-8 py-4 rounded-2xl shadow-lg bg-[#1e293b] text-[#faf8f4] text-base font-medium animate-fade-in">
+            여행 돋보기에 오신 것을 환영합니다!
+          </div>
+        </div>
+      )}
       {/* 로그인 카드 */}
       <div className="relative w-full max-w-md px-6 sm:px-8">
         <div className="bg-[#faf8f4] rounded-[24px] shadow-lg overflow-hidden">
@@ -53,9 +61,9 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <h1 className="text-[28px] font-black text-slate-950 tracking-tight leading-tight mb-2">
+              <a href="/" className="text-[28px] font-black text-slate-950 tracking-tight leading-tight mb-2 block hover:opacity-80 transition-opacity">
                 여행 돋보기
-              </h1>
+              </a>
 
               <p className="text-[#9b9488] text-sm">
                 로그인하고 AI 리뷰 분석을 시작하세요

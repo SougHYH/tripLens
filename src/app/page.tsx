@@ -44,6 +44,7 @@ const mapNodes = [
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   useEffect(() => {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -71,6 +72,13 @@ export default function Home() {
       className="relative flex min-h-screen flex-col font-sans tracking-tight bg-[#EFECE5] bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url('/images/map10.png')" }}
     >
+      {showToast && (
+        <div className="fixed inset-0 z-50 flex items-start pt-24 justify-center pointer-events-none">
+          <div className="px-8 py-4 rounded-2xl shadow-lg bg-[#1e293b] text-[#faf8f4] text-base font-medium animate-fade-in">
+            로그아웃되었습니다.
+          </div>
+        </div>
+      )}
 
       {/* 스탬프 아이콘 */}
       <div className="absolute top-[81%] left-[86%] z-50 pointer-events-none opacity-40">
@@ -112,6 +120,8 @@ export default function Home() {
 
                   await supabase.auth.signOut();
                   setIsLoggedIn(false);
+                  setShowToast(true);
+                  setTimeout(() => { setShowToast(false); }, 400);
                 }}
                 className="hover:text-red-500 transition-colors"
               >
