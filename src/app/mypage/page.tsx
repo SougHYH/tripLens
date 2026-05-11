@@ -9,11 +9,18 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
 export default function MyPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [joinedAt, setJoinedAt] = useState('');
   const [showToast, setShowToast] = useState(false);
+
+  //리스트 기능을 위해 추가된 상태값
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -24,6 +31,22 @@ export default function MyPage() {
       setJoinedAt(
         `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
       );
+
+      //사용자 ID로 즐겨찾기 목록을 가져옴
+      fetch(`${API_URL}/favorites/${user.id}`)
+        .then((r) => r.json())
+        .then((data) => {
+          const mapped = data.map((f: any) => ({
+            name: f.places?.name ?? f.place_id,
+            address: f.places?.address ?? "",
+            placeId: f.place_id,
+          }));
+          setFavorites(mapped.reverse().slice(0, 5));
+        })
+        .catch(() => {
+          setFavorites([]);
+        })
+        .finally(() => setIsLoading(false));
     });
   }, []);
 
@@ -32,6 +55,7 @@ export default function MyPage() {
     setShowToast(true);
     setTimeout(() => { router.push("/"); }, 400);
   };
+
   return (
     <div className="min-h-screen" style={{ background: '#f6f2eb' }}>
       {/* 로그아웃 토스트 */}
@@ -42,6 +66,7 @@ export default function MyPage() {
           </div>
         </div>
       )}
+
       {/* 헤더 */}
       <nav className="flex items-center p-6 px-12 border-b border-[#D7D3C8] bg-[#EFECE5]/80 backdrop-blur-md sticky top-0 z-50">
         <a href="/" className="text-2xl font-black tracking-tighter text-slate-900" style={{ textDecoration: 'none' }}>
@@ -51,6 +76,7 @@ export default function MyPage() {
 
       {/* 메인 콘텐츠 */}
       <main style={{ maxWidth: '1152px', margin: '0 auto', padding: '32px 24px 48px' }}>
+        
         {/* 페이지 제목 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
           <div style={{
@@ -68,6 +94,7 @@ export default function MyPage() {
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#020617' }}>My Page</h1>
         </div>
+
         {/* 프로필 영역 */}
         <section style={{ marginBottom: '32px' }}>
           <div style={{
@@ -82,7 +109,6 @@ export default function MyPage() {
               justifyContent: 'center',
               textAlign: 'center'
             }}>
-              {/* 프로필 아이콘 */}
               <div style={{
                 width: '82px',
                 height: '82px',
@@ -109,7 +135,6 @@ export default function MyPage() {
                 </svg>
               </div>
 
-              {/* 닉네임 */}
               <h2 style={{
                 fontSize: '28px',
                 fontWeight: 900,
@@ -119,7 +144,6 @@ export default function MyPage() {
                 {email.split('@')[0]}
               </h2>
 
-              {/* 이메일 */}
               <p style={{
                 color: '#475569',
                 fontWeight: 500,
@@ -129,7 +153,6 @@ export default function MyPage() {
                 {email}
               </p>
 
-              {/* 가입일 */}
               <p style={{
                 fontSize: '14px',
                 color: '#9b9488',
@@ -141,60 +164,114 @@ export default function MyPage() {
           </div>
         </section>
 
-        {/* 즐겨찾기 이동 버튼 섹션 */}
-        <section style={{ marginBottom: '24px' }}>
-          <button
-            onClick={() => router.push('/favorites')}
-            style={{
-              width: '100%',
-              padding: '18px 22px',
-              background: '#faf8f4',
-              borderRadius: '20px',
-              border: '1px solid #e0dbd3',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.06)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.03)';
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '12px',
-                background: '#fef3c7',
-                display: 'flex',
+        {/* 즐겨찾기 섹션 */}
+        <section style={{ marginBottom: '40px' }}>
+          <div style={{ textAlign: 'center' }}>
+            {/* 메인 버튼 */}
+            <button
+              onClick={() => router.push('/favorites')}
+              style={{
+                display: 'inline-flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                gap: '10px',
+                padding: '14px 32px',
+                background: '#1e293b',
+                color: '#fff',
+                borderRadius: '99px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                border: 'none',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                zIndex: 2,
+                position: 'relative'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+            >
+              <svg style={{ width: '20px', height: '20px' }} fill="#f59e0b" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              <span style={{ fontSize: '15px', fontWeight: 800 }}>내 즐겨찾기 장소</span>
+              <svg style={{ width: '14px', height: '14px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            {/* 리스트 */}
+            <div style={{
+              marginTop: '-20px',
+              paddingTop: '36px',
+              paddingBottom: '20px',
+              background: 'rgba(255, 255, 255, 0.4)',
+              borderRadius: '32px',
+              border: '1px solid #e0dbd3',
+              maxWidth: '700px',
+              margin: '-20px auto 0'
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                padding: '0 20px'
               }}>
-                <svg
-                  style={{ width: '24px', height: '24px' }}
-                  fill="#f59e0b"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-              </div>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: '18px', fontWeight: 700, color: '#020617' }}>내 즐겨찾기</div>
-                <div style={{ fontSize: '14px', color: '#9b9488' }}>저장한 항목들을 확인해보세요</div>
+                {isLoading ? (
+                  <div style={{ padding: '20px', color: '#94a3b8', fontSize: '13px' }}>데이터 로딩 중...</div>
+                ) : favorites.length > 0 ? (
+                  favorites.map((item, index) => (
+                    <div
+                      key={index}
+                      onClick={() => router.push(`/review?q=${encodeURIComponent(item.name)}&id=${encodeURIComponent(item.placeId)}&address=${encodeURIComponent(item.address)}&from=mypage`)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '12px 16px',
+                        borderBottom: index !== favorites.length - 1 ? '1px solid rgba(224, 219, 211, 0.5)' : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.6)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <div style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: '#f59e0b',
+                        marginRight: '16px',
+                        boxShadow: '0 0 8px rgba(245, 158, 11, 0.4)',
+                        flexShrink: 0
+                      }} />
+                      
+                      <div style={{ flex: 1, textAlign: 'left', overflow: 'hidden' }}>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {item.name}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {item.address}
+                        </div>
+                      </div>
+                      
+                      <div style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: '#9b9488',
+                        marginLeft: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '2px'
+                      }}>
+                        리포트
+                        <svg style={{ width: '10px', height: '10px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ padding: '30px', color: '#9b9488', fontSize: '13px' }}>아직 저장된 장소가 없습니다.</div>
+                )}
               </div>
             </div>
-            <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="#9b9488" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          </div>
         </section>
 
         {/* 로그아웃 */}
@@ -224,8 +301,6 @@ export default function MyPage() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-
-              {/* 아이콘 */}
               <div style={{
                 width: '40px',
                 height: '40px',
@@ -242,51 +317,19 @@ export default function MyPage() {
                   strokeWidth={2.2}
                   viewBox="0 0 24 24"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17 16l4-4m0 0l-4-4m4 4H9"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13 20H6a2 2 0 01-2-2V6a2 2 0 012-2h7"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H9" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 20H6a2 2 0 01-2-2V6a2 2 0 012-2h7" />
                 </svg>
               </div>
 
-              {/* 텍스트 */}
               <div style={{ textAlign: 'left' }}>
-                <div style={{
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  color: '#020617'
-                }}>
-                  로그아웃
-                </div>
-
-                <div style={{
-                  fontSize: '14px',
-                  color: '#9b9488'
-                }}>
-                  안전하게 로그아웃합니다
-                </div>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#020617' }}>로그아웃</div>
+                <div style={{ fontSize: '14px', color: '#9b9488' }}>안전하게 로그아웃합니다</div>
               </div>
             </div>
 
-            {/* 화살표 */}
-            <svg
-              style={{ width: '20px', height: '20px' }}
-              fill="none"
-              stroke="#9b9488"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+            <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="#9b9488" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </section>
