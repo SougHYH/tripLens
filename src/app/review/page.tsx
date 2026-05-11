@@ -160,43 +160,103 @@ function ReviewContent() {
     setIsFavorite(!isFavorite);
   };
 
-  // ── 리뷰 분석 데이터 fetch ──
-  const fetchAnalysis = () => {
-    if (!query) {
-      setIsLoadingAnalysis(false);
-      return;
-    }
 
-    setPlaceName(query);
-
-    setIsLoadingAnalysis(true);
-    setAnalysisError(null);
-
-    getReviewAnalysisByKeyword(query)
-      .then((data) => setAnalysis(data))
-      .catch(() =>
-        setAnalysisError(
-          "리뷰 분석 데이터를 불러오지 못했습니다."
-        )
-      )
-      .finally(() => setIsLoadingAnalysis(false));
-  };
-
+  // 리뷰 분석 + 채팅 내역 통합 로드
   useEffect(() => {
-    fetchAnalysis();
-  }, [query]);
+    const loadAllData = async () => {
+      if (!query) {
+        setIsLoadingAnalysis(false);
+        return;
+      }
 
-  // ── 이전 대화 기록 로드 ──
-  useEffect(() => {
-    if (!userId || !analysis?.placeId || !fromFavorites) return;
-    getChatHistory(userId, analysis.placeId)
-      .then((history) => {
-        if (history.length > 0) {
-          setMessages((prev) => [...prev, ...history]);
+      setPlaceName(query);
+      setIsLoadingAnalysis(true);
+      setAnalysisError(null);
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const currentUserId = session?.user?.id ?? null;
+        if (currentUserId && !userId) {
+          setUserId(currentUserId);
         }
-      })
-      .catch(() => { });
-  }, [userId, analysis?.placeId]);
+
+        // 리뷰 분석 데이터 가져오기
+        const analysisData = await getReviewAnalysisByKeyword(query);
+        setAnalysis(analysisData);
+
+        const targetPlaceId = placeId || analysisData?.placeId;
+
+        // 즐겨찾기에서 넘어온 경우 채팅 내역 가져오기
+        if (fromFavorites && currentUserId && targetPlaceId) {
+          try {
+            const history = await getChatHistory(currentUserId, targetPlaceId);
+            if (history && history.length > 0) {
+              setMessages([
+                {
+                  role: "assistant",
+                  content: `${query ? `'${query}'` : "이 장소"}에 대해 무엇이든 물어보세요!\n예: '주차장 있어?', '아이랑 가기 좋아?'`,
+                },
+                ...history
+              ]);
+            }
+          } catch (chatError) {
+            console.error("채팅 내역을 불러오지 못했습니다 (리뷰는 정상 표시됨):", chatError);
+          }
+        }
+      } catch (error) {
+        console.error("데이터 로드 중 에러 발생:", error);
+        setAnalysisError("리뷰 분석 데이터를 불러오지 못했습니다.");
+      } finally {
+        setIsLoadingAnalysis(false);
+      }
+    };
+
+    loadAllData();
+  }, [query, placeId, fromFavorites]);
+
+
+
+
+  //── 리뷰 분석 데이터 fetch ──
+  // const fetchAnalysis = () => {
+  //   if (!query) {
+  //     setIsLoadingAnalysis(false);
+  //     return;
+  //   }
+
+  //   setPlaceName(query);
+
+  //   setIsLoadingAnalysis(true);
+  //   setAnalysisError(null);
+
+  //   getReviewAnalysisByKeyword(query)
+  //     .then((data) => setAnalysis(data))
+  //     .catch(() =>
+  //       setAnalysisError(
+  //         "리뷰 분석 데이터를 불러오지 못했습니다."
+  //       )
+  //     )
+  //     .finally(() => setIsLoadingAnalysis(false));
+  // };
+
+  // useEffect(() => {
+  //   fetchAnalysis();
+  // }, [query]);
+
+  // // ── 이전 대화 기록 로드 ──
+  // useEffect(() => {
+  //   if (!userId || !analysis?.placeId || !fromFavorites) return;
+  //   getChatHistory(userId, analysis.placeId)
+  //     .then((history) => {
+  //       if (history.length > 0) {
+  //         setMessages((prev) => [...prev, ...history]);
+  //       }
+  //     })
+  //     .catch(() => { });
+  // }, [userId, analysis?.placeId]);
+
+
+
 
   // ── 채팅 자동 스크롤 ──
   useEffect(() => {
@@ -315,7 +375,7 @@ function ReviewContent() {
 
                 <Button
                   variant="outline"
-                  onClick={fetchAnalysis}
+                  onClick={() => window.location.reload()}
                 >
                   다시 시도
                 </Button>
@@ -326,7 +386,7 @@ function ReviewContent() {
             {!analysisError && analysis && (
               <>
                 {/* 장소 헤더 */}
-                <div className="flex justify-between items-start mb-12">
+                <div className="flex justify-between items-start mb-6">
                   <div>
                     <div className="flex items-center gap-1.5 mb-2.5 select-none">
                       <div className="flex items-center justify-center w-4 h-4 rounded-full bg-[#9D8F7B] text-white shadow-sm">
@@ -394,7 +454,69 @@ function ReviewContent() {
                 </div>
 
                 {/* AI 핵심 요약 */}
-                <div className="bg-[#FEFDFC] rounded-[40px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-[#F2F1EC]">
+                <div className="bg-[#FEFDFC] rounded-[40px] px-10 pb-10 pt-6 shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-[#F2F1EC]">
+                  <div className="mb-4 pb-5 border-b border-[#F2F1EC]">
+                    <div className="flex justify-between items-center mb-5">
+                      <h3 className="text-slate-400 font-bold text-sm">
+                        방문자 반응 분석
+                      </h3>
+                      <div className="text-2xl font-black text-slate-800">
+                        긍정{" "}
+                        {analysis.sentiment?.positiveRatio || 0}%
+                      </div>
+                    </div>
+
+                    <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+                      <div
+                        className="h-full bg-blue-600 rounded-full transition-all duration-1000 ease-out"
+                        style={{
+                          width: `${analysis.sentiment?.positiveRatio || 0}%`,
+                        }}
+                      />
+
+                      <div
+                        className="h-full bg-red-500 rounded-full transition-all duration-1000 ease-out"
+                        style={{
+                          width: `${100 -
+                            (analysis.sentiment?.positiveRatio || 0)
+                            }%`,
+                        }}
+                      />
+                    </div>
+
+                    <div className="flex justify-between text-xs font-bold text-slate-400 mt-3">
+                      <div className="flex items-center gap-1.5 line-clamp-1 flex-1 pr-2">
+                        <ThumbsUp
+                          size={14}
+                          className="flex-shrink-0"
+                        />
+
+                        {analysis.sentiment?.positiveKeywords?.join(
+                          ", "
+                        ) || "데이터 없음"}{" "}
+                        (
+                        {analysis.sentiment?.positiveCount || 0}
+                        건)
+                      </div>
+
+                      <div className="flex items-center gap-1.5 line-clamp-1 text-right flex-shrink-0">
+                        <ThumbsDown
+                          size={14}
+                          className="flex-shrink-0"
+                        />
+
+                        {analysis.sentiment?.negativeKeywords?.join(
+                          ", "
+                        ) || "데이터 없음"}{" "}
+                        (
+                        {analysis.sentiment?.negativeCount || 0}
+                        건)
+                      </div>
+                    </div>
+                  </div>
+
+
+
                   <h3 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-2">
                     <span className="bg-slate-800 text-white p-2 rounded-lg text-sm">
                       ✨
@@ -464,8 +586,7 @@ function ReviewContent() {
                 </div>
 
                 {/* 긍정 부정 비율 */}
-
-                <div className="bg-[#FEFDFC] rounded-[32px] px-8 py-6 shadow-sm border border-[#F2F1EC]">
+                {/* <div className="bg-[#FEFDFC] rounded-[32px] px-8 py-6 shadow-sm border border-[#F2F1EC]">
                   <div className="flex justify-between items-center mb-5">
                     <h3 className="text-slate-400 font-bold text-sm">
                       방문자 반응 분석
@@ -524,7 +645,7 @@ function ReviewContent() {
                       건)
                     </div>
                   </div>
-                </div>
+                </div> */}
               </>
             )}
           </div>
