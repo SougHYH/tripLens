@@ -385,6 +385,17 @@ function ReviewContent() {
             {/* 분석 데이터 표시 */}
             {!analysisError && analysis && (
               <>
+                {/* 장소 이미지 */}
+                {analysis.thumbnailUrl && (
+                  <div className="w-full h-56 rounded-[28px] overflow-hidden shadow-sm border border-[#F2F1EC]">
+                    <img
+                      src={analysis.thumbnailUrl}
+                      alt={placeName}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+
                 {/* 장소 헤더 */}
                 <div className="flex justify-between items-start mb-6">
                   <div>
@@ -758,25 +769,4 @@ function ReviewContent() {
               className="absolute right-2 rounded-full bg-slate-800 hover:bg-slate-900 text-white w-12 h-12 transition-transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
             >
               <Send size={18} />
-            </Button>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-// Suspense 래퍼
-export default function ReviewSplitPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex flex-col h-screen w-full items-center justify-center bg-[#EFECE5]">
-          <Loader2 className="w-10 h-10 text-slate-600 animate-spin" />
-        </div>
-      }
-    >
-      <ReviewContent />
-    </Suspense>
-  );
-}
+           

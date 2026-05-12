@@ -18,6 +18,7 @@ class ReviewAnalysis(BaseModel):
     rating: float
     reviewCount: int
     analyzedAt: str
+    thumbnailUrl: Optional[str] = None
 
 
 class ChatMessage(BaseModel):
@@ -31,5 +32,4 @@ class ChatRequest(BaseModel):
     userId: Optional[str] = None
 
 
-class ChatResponse(BaseModel):
-    message: str
+class Chat

@@ -52,6 +52,7 @@ export interface ReviewAnalysis {
   rating: number;
   reviewCount: number;
   analyzedAt: string;        // ISO 날짜 문자열
+  thumbnailUrl?: string;     // 장소 대표 이미지 URL
 }
 
 // ================================
@@ -67,8 +68,3 @@ export interface ChatMessage {
 export interface ChatRequest {
   placeId: string;
   messages: ChatMessage[];
-}
-
-export interface ChatResponse {
-  message: string;
-}

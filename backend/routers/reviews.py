@@ -9,6 +9,11 @@ router = APIRouter()
 
 
 def _build_from_cache(place_id: str, cached: dict) -> ReviewAnalysis:
+    # places 테이블에서 thumbnail_url 조회
+    from db import get_place as db_get_place
+    place_row = db_get_place(place_id)
+    thumbnail_url = (place_row or {}).get("thumbnail_url")
+
     return ReviewAnalysis(
         placeId=place_id,
         summary=cached.get("summary", []),
@@ -23,6 +28,7 @@ def _build_from_cache(place_id: str, cached: dict) -> ReviewAnalysis:
         rating=cached.get("rating", 0.0),
         reviewCount=cached.get("review_count", 0),
         analyzedAt=cached.get("analyzed_at", ""),
+        thumbnailUrl=thumbnail_url,
     )
 
 
@@ -65,6 +71,7 @@ async def _fetch_and_analyze(query: str, place: dict = None) -> ReviewAnalysis:
         rating=place.get("rating", 0.0),
         reviewCount=len(reviews),
         analyzedAt=datetime.now(timezone.utc).isoformat(),
+        thumbnailUrl=place.get("thumbnailUrl") or place.get("thumbnail_url"),
     )
 
 
@@ -135,11 +142,4 @@ async def chat(request: ChatRequest):
                 session_id = get_or_create_qa_session(request.userId, request.placeId)
                 last_user_msg = next((m for m in reversed(request.messages) if m.role == "user"), None)
                 if last_user_msg:
-                    save_qa_message(session_id, "user", last_user_msg.content)
-                save_qa_message(session_id, "assistant", reply)
-            except Exception:
-                pass
-
-        return ChatResponse(message=reply)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"채팅 처리 중 오류 발생: {str(e)}")
+                    save_qa_message(session_id, "user", 
