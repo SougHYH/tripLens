@@ -1,3 +1,4 @@
+import traceback
 from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, timezone
 from models.review import ReviewAnalysis, ChatRequest, ChatResponse, SentimentBreakdown
@@ -128,6 +129,7 @@ async def get_review_analysis_by_keyword(
     except HTTPException:
         raise
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"리뷰 분석 중 오류 발생: {str(e)}")
 
 
@@ -161,8 +163,8 @@ async def chat(request: ChatRequest):
                 if last_user_msg:
                     save_qa_message(session_id, "user", last_user_msg.content)
                 save_qa_message(session_id, "assistant", reply)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[채팅 저장 실패] {e}")
 
         return ChatResponse(message=reply)
     except Exception as e:

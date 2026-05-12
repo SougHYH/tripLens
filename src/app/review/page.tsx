@@ -13,7 +13,6 @@ import {
   GripVertical,
   Check,
   Loader2,
-  Search,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -24,12 +23,7 @@ import {
   sendChatMessage,
   getChatHistory,
 } from "@/services/reviewService";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { supabase } from "@/lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -42,7 +36,8 @@ function ReviewContent() {
   const query = searchParams.get("q") || "";
   const placeId = searchParams.get("id") || "";
   const address = searchParams.get("address") || "";
-  const fromFavorites = searchParams.get("from") === "favorites";
+  const from = searchParams.get("from");
+  const fromFavorites = from === "favorites" || from === "mypage";
 
   const [placeName, setPlaceName] = useState(query || "장소 검색 중...");
   const [isFavorite, setIsFavorite] = useState(false);
@@ -128,20 +123,29 @@ function ReviewContent() {
     const currentPlaceId = analysis?.placeId || placeId || "";
 
     if (userId && currentPlaceId) {
-      if (isFavorite) {
-        await fetch(`${API_URL}/favorites/`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId, place_id: currentPlaceId }),
-        });
-        showToast("즐겨찾기가 취소되었습니다.");
-      } else {
-        await fetch(`${API_URL}/favorites/`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId, place_id: currentPlaceId }),
-        });
-        showToast("즐겨찾기에 추가되었습니다.");
+      try {
+        if (isFavorite) {
+          const res = await fetch(`${API_URL}/favorites/`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: userId, place_id: currentPlaceId }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          setIsFavorite(false);
+          showToast("즐겨찾기가 취소되었습니다.");
+        } else {
+          const res = await fetch(`${API_URL}/favorites/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: userId, place_id: currentPlaceId }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          setIsFavorite(true);
+          showToast("즐겨찾기에 추가되었습니다.");
+        }
+      } catch (err) {
+        console.error("즐겨찾기 오류:", err);
+        showToast("오류가 발생했습니다. 다시 시도해주세요.");
       }
     } else {
       const saved = JSON.parse(localStorage.getItem("favorites") || "[]");
@@ -149,15 +153,15 @@ function ReviewContent() {
       let updated = [];
       if (isFavorite) {
         updated = saved.filter((f: any) => (typeof f === "string" ? f : f.name) !== query);
+        setIsFavorite(false);
         showToast("즐겨찾기가 취소되었습니다.");
       } else {
         updated = [...saved, { name: query, address: validAddress, placeId: currentPlaceId }];
+        setIsFavorite(true);
         showToast("즐겨찾기에 추가되었습니다.");
       }
       localStorage.setItem("favorites", JSON.stringify(updated));
     }
-
-    setIsFavorite(!isFavorite);
   };
 
 

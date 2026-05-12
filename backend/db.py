@@ -82,6 +82,7 @@ def save_review(place_id: str, analysis: dict, place: dict = None) -> dict:
 
 # ── FAVORITES ────────────────────────────────────────────
 
+
 def get_favorites(user_id: str) -> list:
     res = (
         supabase.table("favorites")

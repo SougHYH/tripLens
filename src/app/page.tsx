@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Search, MapPin, Bed, Utensils } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 import SearchBar from "@/components/common/SearchBar";
 import Link from "next/link";
 
@@ -46,11 +46,6 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showToast, setShowToast] = useState(false);
   useEffect(() => {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
     // 처음 세션 확인
     supabase.auth.getSession().then(({ data }) => {
       setIsLoggedIn(!!data.session);
@@ -100,11 +95,6 @@ export default function Home() {
 
               <button
                 onClick={async () => {
-                  const supabase = createClient(
-                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-                  );
-
                   await supabase.auth.signOut();
                   setIsLoggedIn(false);
                   setShowToast(true);
