@@ -33,6 +33,11 @@ def get_place(place_id: str) -> dict:
     return res.data[0] if res.data else None
 
 
+def get_place_by_name(name: str) -> dict:
+    res = supabase.table("places").select("*").ilike("name", name).limit(1).execute()
+    return res.data[0] if res.data else None
+
+
 # ── REVIEWS & CACHE ──────────────────────────────────────
 
 def get_cached_review(place_id: str) -> dict:

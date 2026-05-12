@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from models.review import ReviewAnalysis, ChatRequest, ChatResponse, SentimentBreakdown
 from services.scraper import get_reviews, search_places
 from services.ai import analyze_reviews, chat_about_place
-from db import get_cached_review, save_review, upsert_place, get_or_create_qa_session, save_qa_message, get_qa_messages
+from db import get_cached_review, save_review, upsert_place, get_or_create_qa_session, save_qa_message, get_qa_messages, get_place_by_name
 
 router = APIRouter()
 
@@ -100,10 +100,19 @@ async def get_review_analysis_by_keyword(keyword: str = Query(..., description="
     GET /reviews/analysis?keyword=카페명암
     """
     try:
+        # DB에서 먼저 장소 조회 → 캐시 확인 (Outscraper 호출 없음)
+        db_place = get_place_by_name(keyword)
+        if db_place:
+            place_id = db_place.get("place_id", "")
+            cached = get_cached_review(place_id)
+            if cached:
+                return _build_from_cache(place_id, cached)
+
+        # DB에 없거나 캐시 만료 시 Outscraper 호출
         places = await search_places(keyword, limit=1)
         place = places[0] if places else {}
         place_id = place.get("id", "")
-        if place_id:
+        if place_id and not db_place:
             cached = get_cached_review(place_id)
             if cached:
                 return _build_from_cache(place_id, cached)
