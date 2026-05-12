@@ -76,16 +76,16 @@ export async function getReviewAnalysis(placeId: string): Promise<ReviewAnalysis
 // 키워드 검색으로 리뷰 분석 조회 (검색 직후 바로 분석 보여줄 때)
 // GET /reviews/analysis?keyword=...
 // ================================
-export async function getReviewAnalysisByKeyword(keyword: string): Promise<ReviewAnalysis> {
+export async function getReviewAnalysisByKeyword(keyword: string, kakaoId?: string): Promise<ReviewAnalysis> {
   if (USE_MOCK) {
     await new Promise((resolve) => setTimeout(resolve, 700));
-    // 목업: 키워드에 매칭되는 장소 찾아서 반환
     return MOCK_REVIEW_ANALYSIS["3"];
   }
 
-  const res = await apiClient.get<ReviewAnalysis>(
-    `/reviews/analysis?keyword=${encodeURIComponent(keyword)}`
-  );
+  const params = new URLSearchParams({ keyword });
+  if (kakaoId) params.set("kakao_id", kakaoId);
+
+  const res = await apiClient.get<ReviewAnalysis>(`/reviews/analysis?${params.toString()}`);
   return res;
 }
 

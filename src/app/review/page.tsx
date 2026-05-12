@@ -181,7 +181,7 @@ function ReviewContent() {
         }
 
         // 리뷰 분석 데이터 가져오기
-        const analysisData = await getReviewAnalysisByKeyword(query);
+        const analysisData = await getReviewAnalysisByKeyword(query, placeId);
         setAnalysis(analysisData);
 
         const targetPlaceId = placeId || analysisData?.placeId;

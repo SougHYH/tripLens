@@ -94,28 +94,26 @@ async def get_review_analysis(place_id: str):
 
 
 @router.get("/analysis", response_model=ReviewAnalysis)
-async def get_review_analysis_by_keyword(keyword: str = Query(..., description="검색 키워드")):
+async def get_review_analysis_by_keyword(
+    keyword: str = Query(..., description="검색 키워드"),
+    kakao_id: str = Query(None, description="카카오 장소 ID"),
+):
     """
     키워드로 AI 리뷰 분석 결과를 반환합니다.
-    GET /reviews/analysis?keyword=카페명암
+    GET /reviews/analysis?keyword=장소명&kakao_id=카카오ID
     """
     try:
-        # DB에서 먼저 장소 조회 → 캐시 확인 (Outscraper 호출 없음)
-        db_place = get_place_by_name(keyword)
-        if db_place:
-            place_id = db_place.get("place_id", "")
-            cached = get_cached_review(place_id)
+        # 카카오 ID로 캐시 확인 (가장 빠름)
+        if kakao_id:
+            cached = get_cached_review(kakao_id)
             if cached:
-                return _build_from_cache(place_id, cached)
+                return _build_from_cache(kakao_id, cached)
 
-        # DB에 없거나 캐시 만료 시 Outscraper 호출
+        # Outscraper 호출 후 카카오 ID로 저장
         places = await search_places(keyword, limit=1)
         place = places[0] if places else {}
-        place_id = place.get("id", "")
-        if place_id and not db_place:
-            cached = get_cached_review(place_id)
-            if cached:
-                return _build_from_cache(place_id, cached)
+        if kakao_id:
+            place["id"] = kakao_id
         return await _fetch_and_analyze(keyword, place=place)
     except HTTPException:
         raise
