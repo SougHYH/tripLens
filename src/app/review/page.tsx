@@ -385,17 +385,6 @@ function ReviewContent() {
             {/* 분석 데이터 표시 */}
             {!analysisError && analysis && (
               <>
-                {/* 장소 이미지 */}
-                {analysis.thumbnailUrl && (
-                  <div className="w-full h-56 rounded-[28px] overflow-hidden shadow-sm border border-[#F2F1EC]">
-                    <img
-                      src={analysis.thumbnailUrl}
-                      alt={placeName}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-
                 {/* 장소 헤더 */}
                 <div className="flex justify-between items-start mb-6">
                   <div>
@@ -463,6 +452,17 @@ function ReviewContent() {
                     </span>
                   </div>
                 </div>
+
+                {/* 장소 이미지 */}
+                {analysis.thumbnailUrl && (
+                  <div className="w-full h-56 rounded-[28px] overflow-hidden shadow-sm border border-[#F2F1EC]">
+                    <img
+                      src={analysis.thumbnailUrl}
+                      alt={placeName}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
 
                 {/* AI 핵심 요약 */}
                 <div className="bg-[#FEFDFC] rounded-[40px] px-10 pb-10 pt-6 shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-[#F2F1EC]">
