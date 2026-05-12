@@ -32,4 +32,5 @@ class ChatRequest(BaseModel):
     userId: Optional[str] = None
 
 
-class Chat
+class ChatResponse(BaseModel):
+    message: str

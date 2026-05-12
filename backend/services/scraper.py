@@ -76,4 +76,6 @@ async def get_reviews(query: str, reviews_limit: int = 100) -> list[dict]:
                 "author": review.get("autor_name", "익명"),
                 "rating": review.get("review_rating", 0),
                 "text": review.get("review_text", ""),
- 
+                "date": review.get("review_datetime_utc", ""),
+            })
+    return reviews

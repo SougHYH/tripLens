@@ -142,4 +142,11 @@ async def chat(request: ChatRequest):
                 session_id = get_or_create_qa_session(request.userId, request.placeId)
                 last_user_msg = next((m for m in reversed(request.messages) if m.role == "user"), None)
                 if last_user_msg:
-                    save_qa_message(session_id, "user", 
+                    save_qa_message(session_id, "user", last_user_msg.content)
+                save_qa_message(session_id, "assistant", reply)
+            except Exception:
+                pass
+
+        return ChatResponse(message=reply)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"채팅 처리 중 오류 발생: {str(e)}")

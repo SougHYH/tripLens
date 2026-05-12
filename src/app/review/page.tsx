@@ -769,4 +769,25 @@ function ReviewContent() {
               className="absolute right-2 rounded-full bg-slate-800 hover:bg-slate-900 text-white w-12 h-12 transition-transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
             >
               <Send size={18} />
-           
+            </Button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// Suspense 래퍼
+export default function ReviewSplitPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col h-screen w-full items-center justify-center bg-[#EFECE5]">
+          <Loader2 className="w-10 h-10 text-slate-600 animate-spin" />
+        </div>
+      }
+    >
+      <ReviewContent />
+    </Suspense>
+  );
+}

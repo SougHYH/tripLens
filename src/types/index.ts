@@ -68,3 +68,8 @@ export interface ChatMessage {
 export interface ChatRequest {
   placeId: string;
   messages: ChatMessage[];
+}
+
+export interface ChatResponse {
+  message: string;
+}
