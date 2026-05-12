@@ -109,6 +109,16 @@ async def get_review_analysis_by_keyword(
             if cached:
                 return _build_from_cache(kakao_id, cached)
 
+        # 카카오 ID 없으면 DB에서 이름으로 조회해서 기존 ID 재사용
+        if not kakao_id:
+            db_place = get_place_by_name(keyword)
+            if db_place:
+                existing_id = db_place.get("place_id", "")
+                cached = get_cached_review(existing_id)
+                if cached:
+                    return _build_from_cache(existing_id, cached)
+                kakao_id = existing_id
+
         # Outscraper 호출 후 카카오 ID로 저장
         places = await search_places(keyword, limit=1)
         place = places[0] if places else {}
