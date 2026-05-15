@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation"; // useRouter 추가
 import Link from "next/link";
 import {
   MessageSquare,
@@ -32,6 +32,7 @@ import { ReviewAnalysis, ChatMessage } from "@/types";
 // useSearchParams()를 사용하는 컴포넌트는 Suspense로 감싸야 빌드 통과
 function ReviewContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const query = searchParams.get("q") || "";
   const placeId = searchParams.get("id") || "";
@@ -42,6 +43,11 @@ function ReviewContent() {
   const [placeName, setPlaceName] = useState(query || "장소 검색 중...");
   const [isFavorite, setIsFavorite] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+
+  // ─────────────────────────────────────
+  // 로그인 유도 팝업 상태
+  // ─────────────────────────────────────
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // ─────────────────────────────────────
   // 토스트 상태 추가
@@ -120,6 +126,11 @@ function ReviewContent() {
   // 즐겨찾기 토글
   // ─────────────────────────────────────
   const toggleFavorite = async () => {
+    if (!userId) {
+      setShowLoginModal(true);
+      return;
+    }
+
     const currentPlaceId = analysis?.placeId || placeId || "";
 
     if (userId && currentPlaceId) {
@@ -219,49 +230,6 @@ function ReviewContent() {
   }, [query, placeId, fromFavorites]);
 
 
-
-
-  //── 리뷰 분석 데이터 fetch ──
-  // const fetchAnalysis = () => {
-  //   if (!query) {
-  //     setIsLoadingAnalysis(false);
-  //     return;
-  //   }
-
-  //   setPlaceName(query);
-
-  //   setIsLoadingAnalysis(true);
-  //   setAnalysisError(null);
-
-  //   getReviewAnalysisByKeyword(query)
-  //     .then((data) => setAnalysis(data))
-  //     .catch(() =>
-  //       setAnalysisError(
-  //         "리뷰 분석 데이터를 불러오지 못했습니다."
-  //       )
-  //     )
-  //     .finally(() => setIsLoadingAnalysis(false));
-  // };
-
-  // useEffect(() => {
-  //   fetchAnalysis();
-  // }, [query]);
-
-  // // ── 이전 대화 기록 로드 ──
-  // useEffect(() => {
-  //   if (!userId || !analysis?.placeId || !fromFavorites) return;
-  //   getChatHistory(userId, analysis.placeId)
-  //     .then((history) => {
-  //       if (history.length > 0) {
-  //         setMessages((prev) => [...prev, ...history]);
-  //       }
-  //     })
-  //     .catch(() => { });
-  // }, [userId, analysis?.placeId]);
-
-
-
-
   // ── 채팅 자동 스크롤 ──
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({
@@ -342,6 +310,38 @@ function ReviewContent() {
     <div className="flex h-screen w-full bg-[#EFECE5] text-slate-950 font-sans tracking-tight overflow-hidden relative">
 
       {/* ───────────────────────────────────── */}
+      {/* 로그인 유도 모달 */}
+      {/* ───────────────────────────────────── */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-[32px] p-8 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-300">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Star className="text-amber-500 fill-amber-500" size={32} />
+            </div>
+            <h3 className="text-xl font-black text-slate-900 text-center mb-2">즐겨찾기는 로그인이 필요해요</h3>
+            <p className="text-slate-500 text-center text-sm mb-8 leading-relaxed">
+              로그인하시면 나만의 여행 장소를 저장하고<br />언제든 다시 꺼내볼 수 있습니다.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <Button 
+                variant="outline" 
+                className="rounded-full py-6 border-slate-200 text-slate-500 font-bold"
+                onClick={() => setShowLoginModal(false)}
+              >
+                나중에
+              </Button>
+              <Button 
+                className="rounded-full py-6 bg-slate-900 hover:bg-slate-800 text-white font-bold"
+                onClick={() => router.push("/login")}
+              >
+                로그인하기
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ───────────────────────────────────── */}
       {/* 토스트 */}
       {/* ───────────────────────────────────── */}
       {toast.visible && (
@@ -358,13 +358,16 @@ function ReviewContent() {
 
       {/* [좌측] 리뷰 분석 영역 */}
       <section className="w-full lg:w-[60%] h-full flex flex-col z-10">
-        {/* 홈 화면으로 가는 로고 */}
-        <div className="px-12 py-5 border-b border-[#dcd9d0] bg-[#EFECE5]/80 backdrop-blur-sm z-20 flex items-center">
+        {/* 홈 화면으로 가는 로고 + 상단 바 */}
+        <div className="px-12 py-5 border-b border-[#dcd9d0] bg-[#EFECE5]/80 backdrop-blur-sm z-20 flex items-center justify-between">
           <Link href="/">
             <span className="text-2xl font-black text-slate-950 tracking-tighter hover:opacity-70 transition-opacity">
               여행 돋보기
             </span>
           </Link>
+
+          {/* 상단 버튼 세트 삭제됨 */}
+          <div className="flex items-center gap-3"></div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
@@ -599,68 +602,6 @@ function ReviewContent() {
                     </div>
                   )}
                 </div>
-
-                {/* 긍정 부정 비율 */}
-                {/* <div className="bg-[#FEFDFC] rounded-[32px] px-8 py-6 shadow-sm border border-[#F2F1EC]">
-                  <div className="flex justify-between items-center mb-5">
-                    <h3 className="text-slate-400 font-bold text-sm">
-                      방문자 반응 분석
-                    </h3>
-
-                    <div className="text-2xl font-black text-slate-800">
-                      긍정{" "}
-                      {analysis.sentiment?.positiveRatio || 0}%
-                    </div>
-                  </div>
-
-                  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
-                    <div
-                      className="h-full bg-blue-600 rounded-full transition-all duration-1000 ease-out"
-                      style={{
-                        width: `${analysis.sentiment?.positiveRatio || 0}%`,
-                      }}
-                    />
-
-                    <div
-                      className="h-full bg-red-500 rounded-full transition-all duration-1000 ease-out"
-                      style={{
-                        width: `${100 -
-                          (analysis.sentiment?.positiveRatio || 0)
-                          }%`,
-                      }}
-                    />
-                  </div>
-
-                  <div className="flex justify-between text-xs font-bold text-slate-400 mt-3">
-                    <div className="flex items-center gap-1.5 line-clamp-1 flex-1 pr-2">
-                      <ThumbsUp
-                        size={14}
-                        className="flex-shrink-0"
-                      />
-
-                      {analysis.sentiment?.positiveKeywords?.join(
-                        ", "
-                      ) || "데이터 없음"}{" "}
-                      (
-                      {analysis.sentiment?.positiveCount || 0}
-                      건)
-                    </div>
-
-                    <div className="flex items-center gap-1.5 line-clamp-1 text-right flex-shrink-0">
-                      <ThumbsDown
-                        size={14}
-                        className="flex-shrink-0"
-                      />
-
-                      {analysis.sentiment?.negativeKeywords?.join(
-                        ", "
-                      ) || "데이터 없음"}{" "}
-                      (
-                      {analysis.sentiment?.negativeCount || 0}
-                      건)
-                    </div>
-                  </div>
-                </div> */}
               </>
             )}
           </div>
