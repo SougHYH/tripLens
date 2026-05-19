@@ -2,9 +2,9 @@ import traceback
 from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, timezone
 from models.review import ReviewAnalysis, ChatRequest, ChatResponse, SentimentBreakdown
-from services.scraper import get_reviews, search_places
-from services.ai import analyze_reviews, chat_about_place
-from db import get_cached_review, save_review, upsert_place, get_or_create_qa_session, save_qa_message, get_qa_messages, get_place_by_name
+from services.scraper import search_places
+from services.ai import analyze_reviews, chat_with_summary
+from db import get_cached_review, save_review, upsert_place, get_or_create_qa_session, save_qa_message, get_qa_messages, get_place_by_name, save_raw_reviews
 
 router = APIRouter()
 
@@ -54,9 +54,10 @@ async def _fetch_and_analyze(query: str, place: dict = None) -> ReviewAnalysis:
     # 4. AI 분석
     analysis = await analyze_reviews(reviews, query)
 
-    # 5. 분석 결과 DB 저장
+    # 5. 분석 결과 + 원본 리뷰 DB 저장
     place_id = place.get("id", query)
     save_review(place_id, analysis, place)
+    save_raw_reviews(place_id, reviews)
 
     return ReviewAnalysis(
         placeId=place_id,
@@ -152,9 +153,12 @@ async def chat(request: ChatRequest):
     POST /reviews/chat
     """
     try:
-        reviews = await get_reviews(request.placeId)
         messages = [{"role": m.role, "content": m.content} for m in request.messages]
-        reply = await chat_about_place(reviews, request.placeId, messages)
+
+        cached = get_cached_review(request.placeId)
+        if not cached:
+            raise HTTPException(status_code=404, detail="리뷰 분석 데이터가 없습니다. 먼저 리뷰 분석을 실행해주세요.")
+        reply = await chat_with_summary(cached, request.placeId, messages)
 
         if request.userId:
             try:

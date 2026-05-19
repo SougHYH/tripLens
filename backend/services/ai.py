@@ -69,7 +69,7 @@ async def analyze_reviews(reviews: list[dict], place_name: str) -> dict:
 
 
 # ================================
-# AI 채팅
+# AI 채팅 (원본 리뷰 기반)
 # ================================
 async def chat_about_place(
     reviews: list[dict],
@@ -88,6 +88,60 @@ async def chat_about_place(
 
 [리뷰 데이터]
 {review_text}
+"""
+
+    chat_messages = [{"role": "system", "content": system_prompt}]
+    chat_messages.extend(messages)
+
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=chat_messages,
+        temperature=0.7,
+        max_tokens=500,
+    )
+
+    return response.choices[0].message.content
+
+
+# ================================
+# AI 채팅 (요약 데이터 기반)
+# ================================
+async def chat_with_summary(
+    summary_data: dict,
+    place_name: str,
+    messages: list[dict],
+) -> str:
+    """
+    AI가 분석한 요약 데이터를 컨텍스트로 사용해 답변합니다.
+    원본 리뷰 대비 토큰 사용량이 매우 적어 응답이 빠릅니다.
+    """
+    summary_text = "\n".join(summary_data.get("summary", []))
+    tags = ", ".join(summary_data.get("tags", []))
+    pos_keywords = ", ".join(summary_data.get("positive_keywords", []))
+    neg_keywords = ", ".join(summary_data.get("negative_keywords", []))
+    rating = summary_data.get("rating", "N/A")
+    review_count = summary_data.get("review_count", 0)
+    positive_ratio = summary_data.get("positive_ratio", 0)
+
+    system_prompt = f"""
+당신은 '{place_name}'의 리뷰 분석 데이터를 기반으로 답변하는 여행 도우미입니다.
+아래 분석 데이터를 바탕으로 사용자 질문에 친절하고 간결하게 답변해주세요.
+데이터에서 확인되지 않는 내용은 "리뷰에서 확인되지 않았어요"라고 솔직하게 말해주세요.
+
+[기본 정보]
+별점: {rating} / 5.0 | 리뷰 수: {review_count}개 | 긍정 비율: {positive_ratio}%
+
+[AI 요약]
+{summary_text}
+
+[태그]
+{tags}
+
+[긍정 키워드]
+{pos_keywords}
+
+[부정 키워드]
+{neg_keywords}
 """
 
     chat_messages = [{"role": "system", "content": system_prompt}]

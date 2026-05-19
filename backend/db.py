@@ -80,6 +80,42 @@ def save_review(place_id: str, analysis: dict, place: dict = None) -> dict:
     return review
 
 
+# ── RAW REVIEWS ──────────────────────────────────────────
+
+def save_raw_reviews(place_id: str, reviews: list[dict]) -> None:
+    rows = [
+        {
+            "place_id":    place_id,
+            "author":      r.get("author", "익명"),
+            "rating":      r.get("rating", 0),
+            "text":        r.get("text", ""),
+            "review_date": r.get("date") or None,
+        }
+        for r in reviews
+        if r.get("text")
+    ]
+    if rows:
+        supabase.table("place_raw_reviews").insert(rows).execute()
+
+
+def get_raw_reviews(place_id: str) -> list[dict]:
+    res = (
+        supabase.table("place_raw_reviews")
+        .select("author, rating, text, review_date")
+        .eq("place_id", place_id)
+        .execute()
+    )
+    return [
+        {
+            "author": r["author"],
+            "rating": r["rating"],
+            "text":   r["text"],
+            "date":   r["review_date"],
+        }
+        for r in (res.data or [])
+    ]
+
+
 # ── FAVORITES ────────────────────────────────────────────
 
 
