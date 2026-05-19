@@ -161,9 +161,10 @@ async def chat_with_summary(
 }}
 
 규칙:
-- 사용자 질문의 답이 위 분석 데이터에 있으면 found_in_reviews: true, 데이터를 근거로 친절하고 간결하게 답변
-- 분석 데이터에 관련 내용이 없으면 found_in_reviews: false, 장소 유형과 일반 여행 지식을 바탕으로 최선의 답변 제공
-- 답변은 항상 친절하고 구체적으로 작성
+- 사용자 질문의 답이 위 분석 데이터에 있으면 found_in_reviews: true, 리뷰 데이터를 근거로 구체적인 수치·키워드를 포함해 답변
+- 분석 데이터에 관련 내용이 없으면 found_in_reviews: false, 장소 유형과 일반 여행 지식을 바탕으로 실질적으로 도움이 되는 정보를 최대한 구체적으로 제공
+- 모호한 마무리("공식 홈페이지를 확인하세요" 등)로 답변을 끝내지 말고, 알고 있는 정보를 최대한 직접 답변
+- 답변은 항상 친절하고 정확하게 작성
 """
 
     chat_messages = [{"role": "system", "content": system_prompt}]
@@ -173,7 +174,7 @@ async def chat_with_summary(
         model=MODEL,
         messages=chat_messages,
         temperature=0.7,
-        max_tokens=500,
+        max_tokens=1000,
         response_format={"type": "json_object"},
     )
 
