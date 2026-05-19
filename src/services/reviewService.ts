@@ -10,7 +10,7 @@ const USE_MOCK = false;
 const MOCK_REVIEW_ANALYSIS: Record<string, ReviewAnalysis> = {
   "1": {
     placeId: "1",
-    summary: "조용하고 분위기 좋은 카페입니다.\n공부하거나 대화하기 좋은 환경이에요.",
+    summary: ["조용하고 분위기 좋은 카페입니다.", "공부하거나 대화하기 좋은 환경이에요.", "주차 공간이 협소하니 대중교통 이용을 추천드려요."],
     tags: ["#분위기맛집", "#조용한카페", "#공부카페"],
     sentiment: {
       positiveCount: 82,
@@ -25,7 +25,7 @@ const MOCK_REVIEW_ANALYSIS: Record<string, ReviewAnalysis> = {
   },
   "2": {
     placeId: "2",
-    summary: "베이글이 정말 맛있는 베이커리입니다.\n주말에는 웨이팅이 필수예요.",
+    summary: ["베이글이 정말 맛있는 베이커리입니다.", "주말에는 웨이팅이 필수예요.", "오전 일찍 방문하면 여유롭게 즐길 수 있어요."],
     tags: ["#베이글맛집", "#웨이팅필수", "#베이커리"],
     sentiment: {
       positiveCount: 197,
@@ -40,7 +40,7 @@ const MOCK_REVIEW_ANALYSIS: Record<string, ReviewAnalysis> = {
   },
   "3": {
     placeId: "3",
-    summary: "분위기가 좋은 식당입니다.\n주말에는 웨이팅이 필수입니다.",
+    summary: ["분위기가 좋은 식당입니다.", "주말에는 웨이팅이 필수입니다.", "예약을 미리 해두시면 대기 없이 입장 가능해요."],
     tags: ["#분위기맛집", "#웨이팅필수"],
     sentiment: {
       positiveCount: 114,
