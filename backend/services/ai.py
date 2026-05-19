@@ -13,9 +13,9 @@ MODEL = "gpt-4o-mini"
 # 리뷰 텍스트 전처리
 # ================================
 def _format_reviews(reviews: list[dict]) -> str:
-    """리뷰 목록을 GPT 프롬프트용 텍스트로 변환"""
+    """리뷰 목록을 GPT 프롬프트용 텍스트로 변환 (수집된 리뷰 전체 전달)"""
     lines = []
-    for i, r in enumerate(reviews[:80], 1):  # 최대 80개 (토큰 절약) get_review 수정 시 함꼐 고려 필요 TODO
+    for i, r in enumerate(reviews, 1):
         lines.append(f"{i}. [별점 {r.get('rating', '?')}] {r.get('text', '')}")
     return "\n".join(lines)
 
