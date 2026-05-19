@@ -75,19 +75,30 @@ async def chat_about_place(
     reviews: list[dict],
     place_name: str,
     messages: list[dict],
-) -> str:
+) -> dict:
     """
     리뷰 데이터를 컨텍스트로 사용해 사용자 질문에 답변합니다.
+    반환: {"found_in_reviews": bool, "answer": str}
     """
     review_text = _format_reviews(reviews)
 
     system_prompt = f"""
 당신은 '{place_name}'의 리뷰 데이터를 기반으로 답변하는 여행 도우미입니다.
-아래는 실제 방문자들의 리뷰입니다. 이 데이터를 바탕으로 사용자 질문에 친절하고 간결하게 답변해주세요.
-리뷰에 없는 내용은 "리뷰에서 확인되지 않았어요"라고 솔직하게 말해주세요.
+아래는 실제 방문자들의 리뷰입니다.
 
 [리뷰 데이터]
 {review_text}
+
+반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 포함하지 마세요.
+{{
+  "found_in_reviews": true 또는 false,
+  "answer": "답변 내용"
+}}
+
+규칙:
+- 사용자 질문의 답이 리뷰 데이터에 있으면 found_in_reviews: true, 리뷰를 근거로 친절하고 간결하게 답변
+- 리뷰에 관련 내용이 없으면 found_in_reviews: false, 장소 유형과 일반 여행 지식을 바탕으로 최선의 답변 제공
+- 답변은 항상 친절하고 구체적으로 작성
 """
 
     chat_messages = [{"role": "system", "content": system_prompt}]
@@ -98,6 +109,7 @@ async def chat_about_place(
         messages=chat_messages,
         temperature=0.7,
         max_tokens=500,
+        response_format={"type": "json_object"},
     )
 
     return response.choices[0].message.content
@@ -110,10 +122,10 @@ async def chat_with_summary(
     summary_data: dict,
     place_name: str,
     messages: list[dict],
-) -> str:
+) -> dict:
     """
     AI가 분석한 요약 데이터를 컨텍스트로 사용해 답변합니다.
-    원본 리뷰 대비 토큰 사용량이 매우 적어 응답이 빠릅니다.
+    반환: {"found_in_reviews": bool, "answer": str}
     """
     summary_text = "\n".join(summary_data.get("summary", []))
     tags = ", ".join(summary_data.get("tags", []))
@@ -125,8 +137,7 @@ async def chat_with_summary(
 
     system_prompt = f"""
 당신은 '{place_name}'의 리뷰 분석 데이터를 기반으로 답변하는 여행 도우미입니다.
-아래 분석 데이터를 바탕으로 사용자 질문에 친절하고 간결하게 답변해주세요.
-데이터에서 확인되지 않는 내용은 "리뷰에서 확인되지 않았어요"라고 솔직하게 말해주세요.
+아래 분석 데이터를 바탕으로 사용자 질문에 답변해주세요.
 
 [기본 정보]
 별점: {rating} / 5.0 | 리뷰 수: {review_count}개 | 긍정 비율: {positive_ratio}%
@@ -142,6 +153,17 @@ async def chat_with_summary(
 
 [부정 키워드]
 {neg_keywords}
+
+반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 포함하지 마세요.
+{{
+  "found_in_reviews": true 또는 false,
+  "answer": "답변 내용"
+}}
+
+규칙:
+- 사용자 질문의 답이 위 분석 데이터에 있으면 found_in_reviews: true, 데이터를 근거로 친절하고 간결하게 답변
+- 분석 데이터에 관련 내용이 없으면 found_in_reviews: false, 장소 유형과 일반 여행 지식을 바탕으로 최선의 답변 제공
+- 답변은 항상 친절하고 구체적으로 작성
 """
 
     chat_messages = [{"role": "system", "content": system_prompt}]
@@ -152,6 +174,11 @@ async def chat_with_summary(
         messages=chat_messages,
         temperature=0.7,
         max_tokens=500,
+        response_format={"type": "json_object"},
     )
 
-    return response.choices[0].message.content
+    result = json.loads(response.choices[0].message.content)
+    return {
+        "found_in_reviews": bool(result.get("found_in_reviews", True)),
+        "answer": result.get("answer", ""),
+    }

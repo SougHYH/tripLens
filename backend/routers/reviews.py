@@ -158,7 +158,9 @@ async def chat(request: ChatRequest):
         cached = get_cached_review(request.placeId)
         if not cached:
             raise HTTPException(status_code=404, detail="리뷰 분석 데이터가 없습니다. 먼저 리뷰 분석을 실행해주세요.")
-        reply = await chat_with_summary(cached, request.placeId, messages)
+        result = await chat_with_summary(cached, request.placeId, messages)
+        reply = result["answer"]
+        found_in_reviews = result["found_in_reviews"]
 
         if request.userId:
             try:
@@ -170,6 +172,6 @@ async def chat(request: ChatRequest):
             except Exception as e:
                 print(f"[채팅 저장 실패] {e}")
 
-        return ChatResponse(message=reply)
+        return ChatResponse(message=reply, foundInReviews=found_in_reviews)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"채팅 처리 중 오류 발생: {str(e)}")

@@ -63,6 +63,7 @@ export type ChatRole = "user" | "assistant";
 export interface ChatMessage {
   role: ChatRole;
   content: string;
+  foundInReviews?: boolean;
 }
 
 export interface ChatRequest {
@@ -72,4 +73,5 @@ export interface ChatRequest {
 
 export interface ChatResponse {
   message: string;
+  foundInReviews: boolean;
 }

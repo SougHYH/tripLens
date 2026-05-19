@@ -97,14 +97,14 @@ export async function sendChatMessage(
   placeId: string,
   messages: ChatMessage[],
   userId?: string
-): Promise<string> {
+): Promise<ChatResponse> {
   if (USE_MOCK) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const lastMsg = messages[messages.length - 1]?.content ?? "";
-    if (lastMsg.includes("주차")) return "이 장소는 주차 공간이 협소하다는 리뷰가 일부 있어요. 근처 공영주차장을 이용하시는 분들도 있더라고요.";
-    if (lastMsg.includes("웨이팅") || lastMsg.includes("대기")) return "주말 점심 시간대에는 30분~1시간 웨이팅이 있다는 후기가 많아요. 평일 오전에 방문하시면 바로 입장 가능해요!";
-    if (lastMsg.includes("아이") || lastMsg.includes("가족")) return "가족 단위 방문객 후기가 꽤 있어요. 아이 동반도 괜찮다는 평이 많습니다 😊";
-    return "리뷰 데이터를 분석한 결과, 방문객 대부분이 만족스러운 경험을 했다고 해요. 더 궁금한 점이 있으신가요?";
+    if (lastMsg.includes("주차")) return { message: "이 장소는 주차 공간이 협소하다는 리뷰가 일부 있어요. 근처 공영주차장을 이용하시는 분들도 있더라고요.", foundInReviews: true };
+    if (lastMsg.includes("웨이팅") || lastMsg.includes("대기")) return { message: "주말 점심 시간대에는 30분~1시간 웨이팅이 있다는 후기가 많아요. 평일 오전에 방문하시면 바로 입장 가능해요!", foundInReviews: true };
+    if (lastMsg.includes("아이") || lastMsg.includes("가족")) return { message: "가족 단위 방문객 후기가 꽤 있어요. 아이 동반도 괜찮다는 평이 많습니다 😊", foundInReviews: true };
+    return { message: "리뷰 데이터를 분석한 결과, 방문객 대부분이 만족스러운 경험을 했다고 해요. 더 궁금한 점이 있으신가요?", foundInReviews: false };
   }
 
   const res = await apiClient.post<ChatResponse>("/reviews/chat", {
@@ -112,7 +112,7 @@ export async function sendChatMessage(
     messages,
     userId,
   });
-  return res.message;
+  return res;
 }
 
 // ================================

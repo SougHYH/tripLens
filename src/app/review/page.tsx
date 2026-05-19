@@ -256,7 +256,7 @@ function ReviewContent() {
     try {
       const targetPlaceId = analysis?.placeId || placeId || query;
 
-      const reply = await sendChatMessage(
+      const { message: reply, foundInReviews } = await sendChatMessage(
         targetPlaceId,
         updatedMessages,
         userId ?? undefined
@@ -267,6 +267,7 @@ function ReviewContent() {
         {
           role: "assistant",
           content: reply,
+          foundInReviews,
         },
       ]);
     } catch {
@@ -653,14 +654,21 @@ function ReviewContent() {
                 </div>
               )}
 
-              <div
-                className={`p-5 rounded-[20px] shadow-sm border text-[14px] leading-relaxed max-w-[80%] whitespace-pre-line
-                ${msg.role === "user"
-                    ? "bg-slate-800 text-white rounded-br-sm border-slate-100"
-                    : "bg-white text-slate-700 rounded-tl-sm border-slate-100"
-                  }`}
-              >
-                {msg.content}
+              <div className="flex flex-col gap-1.5 max-w-[80%]">
+                {msg.role === "assistant" && msg.foundInReviews === false && (
+                  <span className="text-[11px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full w-fit">
+                    수집된 리뷰에 없는 정보 · AI 일반 답변
+                  </span>
+                )}
+                <div
+                  className={`p-5 rounded-[20px] shadow-sm border text-[14px] leading-relaxed whitespace-pre-line
+                  ${msg.role === "user"
+                      ? "bg-slate-800 text-white rounded-br-sm border-slate-100"
+                      : "bg-white text-slate-700 rounded-tl-sm border-slate-100"
+                    }`}
+                >
+                  {msg.content}
+                </div>
               </div>
             </div>
           ))}

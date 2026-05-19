@@ -34,3 +34,4 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     message: str
+    foundInReviews: bool = True
