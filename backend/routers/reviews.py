@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, timezone
 from models.review import ReviewAnalysis, ChatRequest, ChatResponse, SentimentBreakdown
 from services.scraper import get_reviews, search_places
-from services.ai import analyze_reviews, chat_about_place
+from services.ai import analyze_reviews, chat_about_place, chat_with_summary
 from db import get_cached_review, save_review, upsert_place, get_or_create_qa_session, save_qa_message, get_qa_messages, get_place_by_name, save_raw_reviews, get_raw_reviews
 
 router = APIRouter()
@@ -153,11 +153,16 @@ async def chat(request: ChatRequest):
     POST /reviews/chat
     """
     try:
-        reviews = get_raw_reviews(request.placeId)
-        if not reviews:
-            reviews = await get_reviews(request.placeId)
         messages = [{"role": m.role, "content": m.content} for m in request.messages]
-        reply = await chat_about_place(reviews, request.placeId, messages)
+
+        cached = get_cached_review(request.placeId)
+        if cached:
+            reply = await chat_with_summary(cached, request.placeId, messages)
+        else:
+            reviews = get_raw_reviews(request.placeId)
+            if not reviews:
+                reviews = await get_reviews(request.placeId)
+            reply = await chat_about_place(reviews, request.placeId, messages)
 
         if request.userId:
             try:
