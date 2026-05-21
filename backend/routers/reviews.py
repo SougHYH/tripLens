@@ -2,7 +2,7 @@ import traceback
 from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, timezone
 from models.review import ReviewAnalysis, ChatRequest, ChatResponse, SentimentBreakdown
-from services.scraper import search_places
+from services.scraper import get_reviews, search_places
 from services.ai import analyze_reviews, chat_with_summary
 from db import get_cached_review, save_review, upsert_place, get_or_create_qa_session, save_qa_message, get_qa_messages, get_place_by_name, save_raw_reviews
 
