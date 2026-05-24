@@ -41,12 +41,10 @@ def get_place_by_name(name: str) -> dict:
 # ── REVIEWS & CACHE ──────────────────────────────────────
 
 def get_cached_review(place_id: str) -> dict:
-    now = datetime.now(timezone.utc).isoformat()
     res = (
         supabase.table("cache")
         .select("review_id, expires_at, reviews(*)")
         .eq("place_id", place_id)
-        .gt("expires_at", now)
         .execute()
     )
     if not res.data:
