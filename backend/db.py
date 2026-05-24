@@ -28,6 +28,10 @@ def upsert_place(place: dict) -> dict:
     return res.data[0] if res.data else None
 
 
+def update_thumbnail(place_id: str, thumbnail_url: str) -> None:
+    supabase.table("places").update({"thumbnail_url": thumbnail_url}).eq("place_id", place_id).execute()
+
+
 def get_place(place_id: str) -> dict:
     res = supabase.table("places").select("*").eq("place_id", place_id).execute()
     return res.data[0] if res.data else None
