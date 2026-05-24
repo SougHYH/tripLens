@@ -449,16 +449,15 @@ function ReviewContent() {
 
                   {/* 별점 및 리뷰 수 */}
                   <div className="bg-[#FEFDFC] px-6 py-4 rounded-[24px] shadow-sm border border-[#F2F1EC] flex flex-col items-center">
-                    <div className="flex items-center text-amber-500 mb-1">
-                      <Star className="w-6 h-6 fill-amber-500 mr-1.5" />
-
+                    <div className={`flex items-center mb-1 ${analysis.rating > 0 ? "text-amber-500" : "text-slate-300"}`}>
+                      <Star className={`w-6 h-6 mr-1.5 ${analysis.rating > 0 ? "fill-amber-500" : "fill-slate-300"}`} />
                       <span className="text-3xl font-black text-slate-950">
-                        {analysis.rating || "0.0"}
+                        {analysis.rating > 0 ? analysis.rating.toFixed(1) : "—"}
                       </span>
                     </div>
 
                     <span className="text-[11px] text-slate-400 font-bold">
-                      리뷰 {analysis.reviewCount || 0}개
+                      {analysis.rating > 0 ? `리뷰 ${analysis.reviewCount || 0}개` : "평점 정보 없음"}
                     </span>
                   </div>
                 </div>
