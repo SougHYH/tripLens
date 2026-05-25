@@ -57,7 +57,7 @@ def get_cached_review(place_id: str) -> dict:
 
 
 def save_review(place_id: str, analysis: dict, place: dict = None) -> dict:
-    review_res = supabase.table("reviews").insert({
+    review_res = supabase.table("reviews").upsert({
         "place_id":          place_id,
         "summary":           analysis.get("summary", []),
         "tags":              analysis.get("tags", []),
@@ -68,7 +68,7 @@ def save_review(place_id: str, analysis: dict, place: dict = None) -> dict:
         "negative_keywords": analysis.get("negativeKeywords", []),
         "rating":            (place or {}).get("rating") or 0.0,
         "review_count":      (place or {}).get("reviewCount") or (place or {}).get("review_count") or 0,
-    }).execute()
+    }, on_conflict="place_id").execute()
 
     review = review_res.data[0]
     expires_at = (datetime.now(timezone.utc) + timedelta(hours=CACHE_TTL_HOURS)).isoformat()

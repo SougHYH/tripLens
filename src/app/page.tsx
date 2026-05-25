@@ -482,7 +482,7 @@ export default function Home() {
                 <button
                   onClick={handlePrev}
                   disabled={currentIndex === 0}
-                  className="w-12 h-12 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#E2DFD6] flex items-center justify-center text-slate-700 hover:bg-slate-900 hover:text-white hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-700 disabled:hover:shadow-[0_4px_20px_rgba(0,0,0,0.12)]"
+                  className="w-12 h-12 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#E2DFD6] flex items-center justify-center text-slate-700 hover:bg-slate-900 hover:text-white hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 disabled:opacity-0 disabled:pointer-events-none"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -491,7 +491,7 @@ export default function Home() {
                 <button
                   onClick={handleNext}
                   disabled={currentIndex + STEP + PAGE_SIZE > popularPlaces.length}
-                  className="w-12 h-12 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#E2DFD6] flex items-center justify-center text-slate-700 hover:bg-slate-900 hover:text-white hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-700 disabled:hover:shadow-[0_4px_20px_rgba(0,0,0,0.12)]"
+                  className="w-12 h-12 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#E2DFD6] flex items-center justify-center text-slate-700 hover:bg-slate-900 hover:text-white hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 disabled:opacity-0 disabled:pointer-events-none"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
