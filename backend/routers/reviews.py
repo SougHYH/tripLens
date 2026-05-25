@@ -126,6 +126,8 @@ async def get_review_analysis_by_keyword(
         place = places[0] if places else {}
         if kakao_id:
             place["id"] = kakao_id
+            # Outscraper가 오매칭된 경우를 대비해 카카오 키워드를 정확한 이름으로 사용
+            place["name"] = keyword
         return await _fetch_and_analyze(keyword, place=place)
     except HTTPException:
         raise
