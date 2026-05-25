@@ -14,21 +14,6 @@ interface KakaoPlace {
   distance: string;
 }
 
-/* ───── 검색 기록 localStorage 유틸 ───── */
-const SEARCH_HISTORY_KEY = 'tripLens_searchHistory';
-const MAX_HISTORY = 30;
-
-function saveSearchKeyword(keyword: string) {
-  if (typeof window === 'undefined' || !keyword.trim()) return;
-  try {
-    const raw = localStorage.getItem(SEARCH_HISTORY_KEY);
-    const history: string[] = raw ? JSON.parse(raw) : [];
-    const filtered = history.filter(h => h.toLowerCase() !== keyword.trim().toLowerCase());
-    filtered.unshift(keyword.trim());
-    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(filtered.slice(0, MAX_HISTORY)));
-  } catch { /* localStorage 접근 불가 시 무시 */ }
-}
-
 const formatDistance = (meters: string) => {
   const m = parseInt(meters, 10);
   if (!m) return null;
@@ -84,8 +69,6 @@ function SearchResultContent() {
   }, [query, sort, coords]);
 
   const handleSelect = (place: KakaoPlace) => {
-    // ★ 장소 클릭 시 검색어 저장
-    saveSearchKeyword(place.place_name);
 
     const finalAddress = place.road_address_name || place.address_name || "주소 정보 없음";
     router.push(
@@ -96,9 +79,6 @@ function SearchResultContent() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!keyword.trim()) return;
-
-    // ★ 검색 시 키워드 저장
-    saveSearchKeyword(keyword.trim());
 
     router.push(`/search?q=${encodeURIComponent(keyword.trim())}`);
   };
