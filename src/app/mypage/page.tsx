@@ -275,7 +275,7 @@ export default function MyPage() {
       )}
 
       {/* 헤더 */}
-      <nav className="flex items-center p-6 px-12 border-b border-[#D7D3C8] bg-[#EFECE5]/80 backdrop-blur-md sticky top-0 z-50">
+      <nav className="flex items-center p-6 px-12 border-b border-[#EAE6DC] bg-[#FEFDFC]/90 backdrop-blur-md sticky top-0 z-50 shadow-[0_4px_24px_rgba(92,69,57,0.04)]">
         <a href="/" className="text-2xl font-black tracking-tighter text-slate-900" style={{ textDecoration: 'none' }}>
           여행 돋보기
         </a>
