@@ -13,6 +13,8 @@ import {
   GripVertical,
   Check,
   Loader2,
+  Building,
+  Lightbulb,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -240,14 +242,23 @@ function ReviewContent() {
   }, [messages]);
 
   // ── 메시지 전송 ──
-  const handleSend = async () => {
-    if (!input.trim() || isSending) return;
+  // const handleSend = async () => {
+  //   if (!input.trim() || isSending) return;
+
+  //   const userMessage: ChatMessage = {
+  //     role: "user",
+  //     content: input,
+  //   };
+
+
+  const handleSend = async (textToSend?: string) => {
+    const targetText = textToSend !== undefined ? textToSend : input;
+    if (!targetText.trim() || isSending) return;
 
     const userMessage: ChatMessage = {
       role: "user",
-      content: input,
+      content: targetText,
     };
-
     const updatedMessages = [...messages, userMessage];
 
     setMessages(updatedMessages);
@@ -326,14 +337,14 @@ function ReviewContent() {
               로그인하시면 나만의 여행 장소를 저장하고<br />언제든 다시 꺼내볼 수 있습니다.
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="rounded-full py-6 border-slate-200 text-slate-500 font-bold"
                 onClick={() => setShowLoginModal(false)}
               >
                 나중에
               </Button>
-              <Button 
+              <Button
                 className="rounded-full py-6 bg-slate-900 hover:bg-slate-800 text-white font-bold"
                 onClick={() => router.push("/login")}
               >
@@ -374,7 +385,7 @@ function ReviewContent() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
-          <div className="max-w-3xl mx-auto space-y-12">
+          <div className="max-w-5xl mx-auto space-y-12">
 
             {/* 에러 상태 */}
             {analysisError && (
@@ -488,12 +499,14 @@ function ReviewContent() {
                 )}
 
                 {/* AI 핵심 요약 */}
-                <div className="bg-[#FEFDFC] rounded-[40px] px-10 pb-10 pt-6 shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-[#F2F1EC]">
+                <div className="-mt-8 bg-[#FEFDFC] rounded-[40px] px-10 pb-10 pt-6 shadow-[0_20px_50px_rgba(0,0,0,0.03)] border border-[#F2F1EC]">
                   <div className="mb-4 pb-5 border-b border-[#F2F1EC]">
                     <div className="flex justify-between items-center mb-5">
                       <h3 className="text-slate-400 font-bold text-sm">
-                        방문자 반응 분석
+                        방문자 반응 분석 {((analysis.sentiment?.positiveCount || 0) + (analysis.sentiment?.negativeCount || 0)).toLocaleString()}건 완료
                       </h3>
+
+
                       <div className="text-2xl font-black text-slate-800">
                         긍정{" "}
                         {analysis.sentiment?.positiveRatio || 0}%
@@ -552,20 +565,165 @@ function ReviewContent() {
 
 
                   <h3 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-2">
-                    <span className="bg-slate-800 text-white p-2 rounded-lg text-sm">
-                      ✨
+                    <span className="bg-blue-500 text-white p-2 rounded-lg text-sm">
+                      ✈️
                     </span>
                     AI 핵심 요약
                   </h3>
 
-                  <div className="space-y-8">
+
+                  {/*세로 정렬*/}
+                  {/* <div className="flex flex-col mt-6 divide-y divide-slate-200/60">
+                    {analysis.summary[0] && (
+                      <div className="py-6 space-y-3.5 first:pt-0">
+                        <div className="flex items-center gap-3">
+                          <span className="bg-blue-50 text-blue-600 w-9 h-9 flex items-center justify-center rounded-xl text-base font-semibold">✨</span>
+                          <h4 className="text-lg font-bold text-slate-900 tracking-tight">분위기</h4>
+                        </div>
+                        <ul className="text-slate-600 text-[17px] leading-relaxed font-medium space-y-2 list-disc pl-5 marker:text-slate-300">
+                          {analysis.summary[0].split(".").map((s) => s.trim()).filter((s) => s.length > 0).map((sentence, idx) => (
+                            <li key={idx} className="tracking-tight">{sentence}.</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {analysis.summary[1] && (
+                      <div className="py-6 space-y-3.5">
+                        <div className="flex items-center gap-3">
+                          <span className="bg-sky-50 text-sky-600 w-9 h-9 flex items-center justify-center rounded-xl text-base">🏢</span>
+                          <h4 className="text-lg font-bold text-slate-900 tracking-tight">시설 & 서비스</h4>
+                        </div>
+                        <ul className="text-slate-600 text-[17px] leading-relaxed font-medium space-y-2 list-disc pl-5 marker:text-slate-300">
+                          {analysis.summary[1].split(".").map((s) => s.trim()).filter((s) => s.length > 0).map((sentence, idx) => (
+                            <li key={idx} className="tracking-tight">{sentence}.</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {analysis.summary[2] && (
+                      <div className="py-6 space-y-3.5 last:pb-0">
+                        <div className="flex items-center gap-3">
+                          <span className="bg-amber-50 text-amber-600 w-9 h-9 flex items-center justify-center rounded-xl text-base">💡</span>
+                          <h4 className="text-lg font-bold text-slate-900 tracking-tight">꿀팁</h4>
+                        </div>
+                        <ul className="text-slate-600 text-[17px] leading-relaxed font-medium space-y-2 list-disc pl-5 marker:text-slate-300">
+                          {analysis.summary[2].split(".").map((s) => s.trim()).filter((s) => s.length > 0).map((sentence, idx) => (
+                            <li key={idx} className="tracking-tight">{sentence}.</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div> */}
+
+
+
+                  {/* 가로 정렬 */}
+                  <div className="grid grid-cols-3 mt-8 divide-x divide-slate-200/70">
+                    {analysis.summary[0] && (
+                      <div className="px-8 py-2 space-y-4">
+                        <div className="flex items-center gap-3">
+                          <span className="bg-blue-50 text-blue-600 w-9 h-9 flex items-center justify-center rounded-xl text-base font-semibold">✨</span>
+                          <h4 className="text-lg font-bold text-slate-900 tracking-tight">분위기</h4>
+                        </div>
+                        <ul className="text-slate-600 text-[17px] leading-relaxed font-medium space-y-2.5 list-disc pl-4 marker:text-slate-300">
+                          {analysis.summary[0].split(".").map((s) => s.trim()).filter((s) => s.length > 0).map((sentence, idx) => (
+                            <li key={idx} className="tracking-tight">{sentence}.</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {analysis.summary[1] && (
+                      <div className="px-8 py-2 space-y-4">
+                        <div className="flex items-center gap-3">
+                          <span className="bg-sky-50 text-sky-600 w-9 h-9 flex items-center justify-center rounded-xl text-base">🏢</span>
+                          <h4 className="text-lg font-bold text-slate-900 tracking-tight">시설 & 서비스</h4>
+                        </div>
+                        <ul className="text-slate-600 text-[17px] leading-relaxed font-medium space-y-2.5 list-disc pl-4 marker:text-slate-300">
+                          {analysis.summary[1].split(".").map((s) => s.trim()).filter((s) => s.length > 0).map((sentence, idx) => (
+                            <li key={idx} className="tracking-tight">{sentence}.</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {analysis.summary[2] && (
+                      <div className="px-8 py-2 space-y-4">
+                        <div className="flex items-center gap-3">
+                          <span className="bg-amber-50 text-amber-600 w-9 h-9 flex items-center justify-center rounded-xl text-base">💡</span>
+                          <h4 className="text-lg font-bold text-slate-900 tracking-tight">꿀팁</h4>
+                        </div>
+                        <ul className="text-slate-600 text-[17px] leading-relaxed font-medium space-y-2.5 list-disc pl-4 marker:text-slate-300">
+                          {analysis.summary[2].split(".").map((s) => s.trim()).filter((s) => s.length > 0).map((sentence, idx) => (
+                            <li key={idx} className="tracking-tight">{sentence}.</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+
+
+
+                  {/* 가로 정렬 다른 버전 */}
+                  {/* <div className="grid grid-cols-3 mt-6 bg-[#FEFDFC] rounded-[24px] shadow-sm border border-[#F2F1EC] overflow-hidden divide-x divide-[#F2F1EC]">
+                    {analysis.summary[0] && (
+                      <div className="p-6 space-y-4 relative pt-7">
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-blue-600" />
+                        <div className="flex items-center gap-2.5">
+                          <span className="bg-blue-50 text-blue-600 w-9 h-9 flex items-center justify-center rounded-xl text-base">✨</span>
+                          <h4 className="text-xl font-bold text-slate-900 tracking-tight">분위기</h4>
+                        </div>
+                        <ul className="text-slate-600 text-[17px] leading-relaxed font-medium space-y-2 list-disc pl-4 marker:text-slate-300">
+                          {analysis.summary[0].split(".").map((s) => s.trim()).filter((s) => s.length > 0).map((sentence, idx) => (
+                            <li key={idx} className="tracking-tight">{sentence}.</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {analysis.summary[1] && (
+                      <div className="p-6 space-y-4 relative pt-7">
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-sky-400" />
+                        <div className="flex items-center gap-2.5">
+                          <span className="bg-sky-50 text-sky-600 w-9 h-9 flex items-center justify-center rounded-xl text-base">🏢</span>
+                          <h4 className="text-xl font-bold text-slate-900 tracking-tight">시설 & 서비스</h4>
+                        </div>
+                        <ul className="text-slate-600 text-[17px] leading-relaxed font-medium space-y-2 list-disc pl-4 marker:text-slate-300">
+                          {analysis.summary[1].split(".").map((s) => s.trim()).filter((s) => s.length > 0).map((sentence, idx) => (
+                            <li key={idx} className="tracking-tight">{sentence}.</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {analysis.summary[2] && (
+                      <div className="p-6 space-y-4 relative pt-7">
+                        <div className="absolute top-0 left-0 right-0 h-1 bg-amber-400" />
+                        <div className="flex items-center gap-2.5">
+                          <span className="bg-amber-50 text-amber-600 w-9 h-9 flex items-center justify-center rounded-xl text-base">💡</span>
+                          <h4 className="text-xl font-bold text-slate-900 tracking-tight">꿀팁</h4>
+                        </div>
+                        <ul className="text-slate-600 text-[17px] leading-relaxed font-medium space-y-2 list-disc pl-4 marker:text-slate-300">
+                          {analysis.summary[2].split(".").map((s) => s.trim()).filter((s) => s.length > 0).map((sentence, idx) => (
+                            <li key={idx} className="tracking-tight">{sentence}.</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div> */}
+
+
+                  {/* 기존 */}
+                  {/* <div className="space-y-8">
                     {analysis.summary &&
                       analysis.summary.length > 0 ? (
                       <>
                         {analysis.summary[0] && (
                           <div className="flex flex-col items-start gap-3">
                             <h4 className="text-[13px] font-bold text-[#8B7B6B] bg-[#F5F1E8] w-fit px-4 py-1.5 rounded-full tracking-wide">
-                              분위기
+                              ✨ 분위기
                             </h4>
 
                             <p className="text-slate-700 text-[17px] leading-relaxed font-medium">
@@ -577,7 +735,7 @@ function ReviewContent() {
                         {analysis.summary[1] && (
                           <div className="flex flex-col items-start gap-3">
                             <h4 className="text-[13px] font-bold text-[#8B7B6B] bg-[#F5F1E8] w-fit px-4 py-1.5 rounded-full tracking-wide">
-                              시설&서비스
+                              🏢 시설&서비스
                             </h4>
 
                             <p className="text-slate-700 text-[17px] leading-relaxed font-medium">
@@ -589,7 +747,7 @@ function ReviewContent() {
                         {analysis.summary[2] && (
                           <div className="flex flex-col items-start gap-3">
                             <h4 className="text-[13px] font-bold text-[#8B7B6B] bg-[#F5F1E8] w-fit px-4 py-1.5 rounded-full tracking-wide">
-                              꿀팁
+                              💡 꿀팁 
                             </h4>
 
                             <p className="text-slate-700 text-[17px] leading-relaxed font-medium">
@@ -603,9 +761,11 @@ function ReviewContent() {
                         요약 데이터를 불러오는 중입니다...
                       </p>
                     )}
-                  </div>
+                  </div> */}
 
-                  {analysis.tags && (
+
+                  {/* 기존 */}
+                  {/* {analysis.tags && (
                     <div className="mt-10 flex flex-wrap gap-2.5 pt-8 border-t border-slate-50">
                       {analysis.tags.map((tag) => (
                         <span
@@ -616,16 +776,35 @@ function ReviewContent() {
                         </span>
                       ))}
                     </div>
+                  )} */}
+
+
+                  {analysis.tags && (
+                    <div className="mt-10 flex flex-wrap gap-3 pt-6 border-t border-slate-100">
+                      {analysis.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-[13px] font-semibold text-slate-700 bg-[#F2F1EC] px-4 py-2 rounded-tr-xl rounded-bl-xl rounded-tl-none rounded-br-none hover:bg-slate-950 hover:text-white transition-all duration-200 cursor-default tracking-tight flex items-center gap-1"
+                        >
+                          <span className="text-amber-600 font-black text-xs">#</span>
+                          {tag.replace("#", "")}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
               </>
             )}
           </div>
         </div>
-      </section>
+      </section >
+
+
+
 
       {/* [우측] 채팅창 */}
-      <section className="hidden lg:flex w-[40%] bg-[#FEFDFC] border-l border-[#F2F1EC] shadow-[-20px_0_40px_-15px_rgba(0,0,0,0.03)] flex-col h-full z-10">
+      {/* 기존 디자인 */}
+      {/* < section className="hidden lg:flex w-[40%] bg-[#FEFDFC] border-l border-[#F2F1EC] shadow-[-20px_0_40px_-15px_rgba(0,0,0,0.03)] flex-col h-full z-10" >
 
         <div className="p-7 border-b border-[#F2F1EC] bg-[#FEFDFC]/80 backdrop-blur-sm z-20 flex justify-between items-center">
           <div>
@@ -641,14 +820,6 @@ function ReviewContent() {
               리뷰 데이터를 기반으로 답변합니다.
             </p>
           </div>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-slate-300 hover:text-slate-500 rounded-full"
-          >
-            <GripVertical size={20} />
-          </Button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-[#F9F7F2] custom-scrollbar">
@@ -661,7 +832,7 @@ function ReviewContent() {
                 }`}
             >
               {msg.role === "assistant" && (
-                <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm shadow-slate-950">
+                <div className="w-9 h-9 rounded-full bg-[#9D8F7B] flex items-center justify-center flex-shrink-0 mt-0.5 shadow-[0_4px_12px_rgba(157,143,123,0.25)]">
                   <MessageSquare
                     size={16}
                     className="text-white"
@@ -676,10 +847,10 @@ function ReviewContent() {
                   </span>
                 )}
                 <div
-                  className={`p-5 rounded-[20px] shadow-sm border text-[14px] leading-relaxed whitespace-pre-line
+                  className={`p-4 px-5 rounded-[22px] text-[14px] leading-relaxed whitespace-pre-line tracking-tight transition-all
                   ${msg.role === "user"
-                      ? "bg-slate-800 text-white rounded-br-sm border-slate-100"
-                      : "bg-white text-slate-700 rounded-tl-sm border-slate-100"
+                      ? "bg-[#9D8F7B] text-white shadow-[0_4px_14px_rgba(157,143,123,0.2)]"
+                      : "bg-white text-slate-800 border border-slate-200/60 shadow-[0_4px_12px_rgba(0,0,0,0.02)]"
                     }`}
                 >
                   {msg.content}
@@ -734,9 +905,125 @@ function ReviewContent() {
               disabled={
                 isSending || !input.trim()
               }
-              className="absolute right-2 rounded-full bg-slate-800 hover:bg-slate-900 text-white w-12 h-12 transition-transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+              className="absolute right-2 rounded-full bg-[#9D8F7B] hover:bg-[#8B7B6B] text-white w-12 h-12 transition-all hover:scale-105 disabled:opacity-40 disabled:hover:scale-100 shadow-sm"
             >
               <Send size={18} />
+            </Button>
+          </div>
+        </div>
+      </section >
+    </div >
+  );
+} */}
+
+      <section className="hidden lg:flex w-[40%] bg-[#FEFDFC] border-l border-[#F2F1EC] shadow-[-20px_0_40px_-15px_rgba(0,0,0,0.03)] flex-col h-full z-10">
+        <div className="p-7 border-b border-[#F2F1EC] bg-[#FEFDFC]/80 backdrop-blur-sm z-20 flex justify-between items-center">
+          <div>
+            <h2 className="text-[17px] font-black text-slate-950 flex items-center gap-2">
+              <MessageSquare className="text-slate-800" size={18} />
+              여행 돋보기 어시스턴트
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              리뷰 데이터를 기반으로 답변합니다.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-8 space-y-8 bg-[#F9F7F2] custom-scrollbar">
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`flex items-start gap-3.5 ${msg.role === "user" ? "justify-end" : ""}`}
+            >
+              {msg.role === "assistant" && (
+                <div className="w-9 h-9 rounded-full bg-[#9D8F7B] flex items-center justify-center flex-shrink-0 mt-0.5 shadow-[0_4px_12px_rgba(157,143,123,0.25)]">
+                  <MessageSquare size={16} className="text-white" />
+                </div>
+              )}
+
+              <div className={`flex flex-col gap-1.5 ${msg.role === "user" ? "max-w-[80%]" : "max-w-[82%]"}`}>
+                {msg.role === "assistant" && msg.foundInReviews === false && (
+                  <span className="text-[11px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full w-fit mb-0.5">
+                    수집된 리뷰에 없는 정보 · AI 일반 답변
+                  </span>
+                )}
+
+                <div
+                  className={`text-[14.5px] leading-relaxed whitespace-pre-line tracking-tight transition-all
+                  ${msg.role === "user"
+                      ? "bg-[#9D8F7B] text-white p-3.5 px-5 rounded-[20px] shadow-[0_4px_12px_rgba(157,143,123,0.15)] font-medium"
+                      : "bg-transparent text-slate-800 pt-0.5 font-normal"
+                    }`}
+                >
+                  {msg.content}
+                </div>
+
+                {/* 말풍선 있는 버전 */}
+                {/* <div
+                  className={`text-[14.5px] leading-relaxed whitespace-pre-line tracking-tight transition-all
+                  ${msg.role === "user"
+                      ? "bg-[#9D8F7B] text-white p-3.5 px-5 rounded-[20px] shadow-[0_4px_12px_rgba(157,143,123,0.15)] font-medium"
+                      : "bg-white text-slate-800 border border-slate-200/60 shadow-[0_4px_12px_rgba(0,0,0,0.02)] p-4 px-5 rounded-[22px]"
+                    }`}
+                >
+                  {msg.content}
+                </div> */}
+
+                {index === 0 && (
+                  <div className="grid grid-cols-2 gap-2.5 mt-4 max-w-[460px] w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    {[
+                      "🚗 주차장 이용 팁이 궁금해",
+                      "🚶‍♂️ 근처에 같이 갈 만한 곳은?",
+                      "🍰 가장 인기 있는 메뉴 추천해줘",
+                      "👨‍👩‍👧‍👦 가족과 같이 가기 괜찮아?"
+                    ].map((prompt) => (
+                      <button
+                        key={prompt}
+                        onClick={() => handleSend(prompt)}
+                        className="text-left text-[13px] font-semibold text-slate-600 bg-white border border-slate-200/80 p-3.5 rounded-xl hover:border-[#9D8F7B] hover:bg-[#FEFDFC] hover:text-[#9D8F7B] hover:shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {isSending && (
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-full bg-[#9D8F7B] flex items-center justify-center flex-shrink-0 mt-0.5 shadow-[0_4px_12px_rgba(157,143,123,0.25)]">
+                <MessageSquare size={16} className="text-white" />
+              </div>
+              <div className="pt-2 pl-1 max-w-full">
+                <Loader2 size={18} className="text-slate-500 animate-spin" />
+              </div>
+            </div>
+          )}
+          <div ref={chatBottomRef} />
+        </div>
+
+        <div className="p-6 bg-[#FEFDFC] border-t border-[#F2F1EC] mt-auto">
+          <div className="relative flex items-center bg-[#F5F3EC] border border-[#EFECE5] rounded-2xl p-1.5 focus-within:ring-4 focus-within:ring-[#9D8F7B]/10 focus-within:border-[#9D8F7B]/60 focus-within:bg-white transition-all duration-200">
+            <Input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+              placeholder={`'${placeName}'에 대해 무엇이든 물어보세요`}
+              className="w-full pr-14 pl-4 py-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] font-medium text-slate-800 outline-none placeholder:text-slate-400"
+              disabled={isSending}
+            />
+
+            <Button
+              type="submit"
+              onClick={() => handleSend()}
+              size="icon"
+              disabled={isSending || !input.trim()}
+              className="rounded-xl bg-[#9D8F7B] hover:bg-[#8B7B6B] text-white w-10 h-10 transition-all disabled:opacity-30 shadow-none flex-shrink-0"
+            >
+              <Send size={16} />
             </Button>
           </div>
         </div>
@@ -744,6 +1031,7 @@ function ReviewContent() {
     </div>
   );
 }
+
 
 // Suspense 래퍼
 export default function ReviewSplitPage() {
