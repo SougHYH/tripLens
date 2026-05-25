@@ -18,7 +18,7 @@ interface GooglePlace {
 }
 
 const CATEGORIES = [
-  { label: "관광지", query: "관광지", icon: "🗺️" },
+  { label: "명소", query: "명소", icon: "🗺️" },
   { label: "호텔", query: "호텔", icon: "🏨" },
   { label: "맛집", query: "맛집", icon: "🍽️" },
 ];
