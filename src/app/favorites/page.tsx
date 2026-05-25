@@ -983,9 +983,38 @@ export default function FavoritesPage() {
         </div>
       </div>
 
-      <footer className="relative z-10 mt-16 border-t border-[#D7D3C8]/70 bg-[#EFECE5]/74 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-8 py-5 text-center">
-          <p className="text-[12px] font-bold text-[#000000] uppercase tracking-widest">여행 돋보기 • 즐겨찾기</p>
+      <footer className="relative z-10 mt-20 border-t border-[#D7D3C8]/70 bg-[#EFECE5]/88 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-8 py-7">
+          <div className="flex flex-col items-center justify-center gap-2 text-center">
+            <div className="flex items-center gap-3">
+              <div className="h-px w-10 bg-gradient-to-r from-transparent to-[#B88A62]" />
+              <div className="flex items-center gap-2 rounded-full border border-[#D8C9B8] bg-white/70 px-4 py-2 shadow-sm">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFF4D6] shadow-inner">
+                  <Star
+                    size={13}
+                    className="fill-[#D8A63A] text-[#B8861D]"
+                    strokeWidth={2.4}
+                  />
+                </div>
+
+                <span className="text-sm font-black tracking-wide text-slate-800">
+                  여행 돋보기
+                </span>
+
+                <span className="text-[#B9AAA0]">•</span>
+
+                <span className="text-sm font-bold text-[#7A665A]">
+                  즐겨찾기
+                </span>
+              </div>
+
+              <div className="h-px w-10 bg-gradient-to-l from-transparent to-[#B88A62]" />
+            </div>
+
+            <p className="text-[11px] font-semibold tracking-wide text-[#9C877F]">
+              © 2026 캡스톤디자인 3조 코더사이저
+            </p>
+          </div>
         </div>
       </footer>
     </div>
