@@ -48,7 +48,7 @@ async function request<TResponse, TBody = unknown>(
   if (!response.ok) {
     throw {
       success: false,
-      message: (data as { message?: string; detail?: string })?.message ?? (data as { detail?: string })?.detail ?? "알 수 없는 오류가 발생했습니다.",
+      message: (data as { message?: string })?.message ?? "알 수 없는 오류가 발생했습니다.",
       statusCode: response.status,
     } satisfies ApiError;
   }

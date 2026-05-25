@@ -46,9 +46,14 @@ export default function SearchBar() {
       }
 
       try {
-        const apiUrl = `/api/places/popular?query=${encodeURIComponent(keyword)}&size=15`;
+        const KAKAO_API_KEY = "cfa3881ae9ddb68212b45677d60c85ac";
+        const apiUrl = `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(keyword)}&size=15`;
 
-        const response = await fetch(apiUrl);
+        const response = await fetch(apiUrl, {
+          headers: {
+            "Authorization": `KakaoAK ${KAKAO_API_KEY}`,
+          },
+        });
 
         const data = await response.json();
         setResults(data.documents || []);

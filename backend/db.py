@@ -66,8 +66,8 @@ def save_review(place_id: str, analysis: dict, place: dict = None) -> dict:
         "positive_ratio":    analysis.get("positiveRatio", 0.0),
         "positive_keywords": analysis.get("positiveKeywords", []),
         "negative_keywords": analysis.get("negativeKeywords", []),
-        "rating":            (place or {}).get("rating") or 0.0,
-        "review_count":      (place or {}).get("reviewCount") or (place or {}).get("review_count") or 0,
+        "rating":            (place or {}).get("rating", 0.0),
+        "review_count":      (place or {}).get("reviewCount", 0),
     }).execute()
 
     review = review_res.data[0]

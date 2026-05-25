@@ -1,37 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, MapPin, Bed, Utensils, HelpCircle, Sparkles, MessageSquare, Map, ChevronRight, Loader2 } from "lucide-react";
+import { Search, MapPin, Bed, Utensils, HelpCircle, X, Info, Sparkles, MessageSquare, Map, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import SearchBar from "@/components/common/SearchBar";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-
-interface GooglePlace {
-  id: string;
-  displayName: { text: string };
-  formattedAddress: string;
-  shortFormattedAddress?: string;
-  rating?: number;
-  userRatingCount?: number;
-  photoUrl?: string | null;
-}
-
-const CATEGORIES = [
-  { label: "관광지", query: "관광지", icon: "🗺️" },
-  { label: "호텔", query: "호텔", icon: "🏨" },
-  { label: "맛집", query: "맛집", icon: "🍽️" },
-];
-
-const REGION_DATA: Record<string, string[]> = {
-  "서울": [],
-  "경기": ["수원", "인천", "용인", "고양", "가평", "성남"],
-  "강원": ["속초", "강릉", "춘천", "양양", "평창", "태백"],
-  "충청": ["대전", "천안", "공주", "보령", "충주", "청주"],
-  "전라": ["여수", "전주", "순천", "담양", "광주", "목포"],
-  "경상": ["부산", "경주", "통영", "거제", "대구", "안동"],
-  "제주": ["제주시", "서귀포", "성산", "애월"],
-};
 
 const mapNodes = [
   {
@@ -117,32 +90,10 @@ const helpDetails = {
 };
 
 export default function Home() {
-  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [activeStep, setActiveStep] = useState<number | null>(null);
-
-  const [selectedCategory, setSelectedCategory] = useState(0);
-  const [selectedProvince, setSelectedProvince] = useState("서울");
-  const [selectedRegion, setSelectedRegion] = useState("서울");
-  const [popularPlaces, setPopularPlaces] = useState<GooglePlace[]>([]);
-  const [isLoadingPlaces, setIsLoadingPlaces] = useState(false);
-
-  useEffect(() => {
-    const { query } = CATEGORIES[selectedCategory];
-    const keyword = `${selectedRegion} ${query}`;
-    setIsLoadingPlaces(true);
-
-    const url = new URL("/api/places/google", window.location.origin);
-    url.searchParams.set("query", keyword);
-
-    fetch(url.toString())
-      .then((r) => r.json())
-      .then((data) => setPopularPlaces(data.places || []))
-      .catch(() => setPopularPlaces([]))
-      .finally(() => setIsLoadingPlaces(false));
-  }, [selectedCategory, selectedRegion]);
 
   useEffect(() => {
     // 처음 세션 확인
@@ -237,136 +188,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      {/* 추천 장소 섹션 */}
-      <section className="w-full bg-[#EFECE5] px-12 py-20 z-10 relative border-t border-[#D7D3C8]">
-        <div className="max-w-6xl mx-auto">
-
-          {/* 헤더 */}
-          <div className="mb-12">
-            <h2 className="text-5xl font-black text-slate-900 tracking-tighter leading-none">지역별<br/>추천 장소</h2>
-          </div>
-
-          {/* 필터 바 */}
-          <div className="border-b border-[#D7D3C8] mb-0">
-            {/* 카테고리 + 도 선택 */}
-            <div className="flex items-center justify-between pb-5">
-              <div className="flex gap-7">
-                {CATEGORIES.map((cat, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedCategory(idx)}
-                    className={`text-sm font-bold pb-5 -mb-5 transition-all border-b-2 ${
-                      selectedCategory === idx
-                        ? "text-slate-900 border-slate-900"
-                        : "text-slate-400 border-transparent hover:text-slate-600"
-                    }`}
-                  >
-                    {cat.icon} {cat.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-1">
-                {Object.keys(REGION_DATA).map((province) => (
-                  <button
-                    key={province}
-                    onClick={() => {
-                      setSelectedProvince(province);
-                      setSelectedRegion(REGION_DATA[province].length > 0 ? REGION_DATA[province][0] : province);
-                    }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
-                      selectedProvince === province
-                        ? "bg-slate-900 text-white"
-                        : "text-slate-400 hover:text-slate-700"
-                    }`}
-                  >
-                    {province}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* 시/군 선택 */}
-            {REGION_DATA[selectedProvince].length > 0 && (
-              <div className="flex gap-2 pb-4">
-                {REGION_DATA[selectedProvince].map((city) => (
-                  <button
-                    key={city}
-                    onClick={() => setSelectedRegion(city)}
-                    className={`px-3 py-1.5 rounded-full text-xs transition-all duration-200 ${
-                      selectedRegion === city
-                        ? "bg-slate-100 text-slate-900 font-bold"
-                        : "text-slate-400 font-medium hover:text-slate-600"
-                    }`}
-                  >
-                    {city}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 장소 카드 */}
-          {isLoadingPlaces ? (
-            <div className="flex justify-center items-center h-64">
-              <Loader2 className="w-5 h-5 animate-spin text-slate-300" />
-            </div>
-          ) : popularPlaces.length === 0 ? (
-            <div className="flex justify-center items-center h-64 text-slate-400 text-sm">
-              장소 정보를 불러올 수 없습니다.
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-px bg-[#D7D3C8] border-b border-[#D7D3C8]">
-              {popularPlaces.map((place) => (
-                <button
-                  key={place.id}
-                  onClick={() => router.push(`/review?q=${encodeURIComponent(place.displayName.text)}&id=${place.id}&address=${encodeURIComponent(place.shortFormattedAddress || place.formattedAddress)}`)}
-                  className="relative bg-[#EFECE5] text-left hover:bg-white transition-colors duration-300 group overflow-hidden flex flex-col"
-                >
-                  {/* 사진 */}
-                  <div className="w-full h-40 overflow-hidden bg-slate-100 shrink-0">
-                    {place.photoUrl ? (
-                      <img
-                        src={place.photoUrl}
-                        alt={place.displayName.text}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-[#E8E5DE] flex items-center justify-center">
-                        <MapPin className="w-6 h-6 text-slate-300" />
-                      </div>
-                    )}
-                  </div>
-                  {/* 텍스트 */}
-                  <div className="px-7 py-6 flex flex-col flex-1">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">
-                        {CATEGORIES[selectedCategory].label}
-                      </p>
-                      {place.rating && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-amber-400 text-xs">★</span>
-                          <span className="text-xs font-bold text-slate-500">{place.rating.toFixed(1)}</span>
-                          <span className="text-[10px] text-slate-300 font-medium">({place.userRatingCount?.toLocaleString()})</span>
-                        </div>
-                      )}
-                    </div>
-                    <h3 className="font-black text-slate-900 text-lg mb-1.5 leading-snug line-clamp-1">
-                      {place.displayName.text}
-                    </h3>
-                    <p className="text-xs text-slate-400 font-medium leading-relaxed line-clamp-1">
-                      {place.shortFormattedAddress || place.formattedAddress}
-                    </p>
-                    <div className="mt-5 flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-slate-300 group-hover:text-slate-600 transition-colors duration-300">리뷰 분석</span>
-                      <ChevronRight className="w-3 h-3 text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all duration-300" />
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
 
       {/* 가이드 모달 */}
       {showHelp && (
