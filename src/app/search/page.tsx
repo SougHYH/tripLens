@@ -61,7 +61,10 @@ function SearchResultContent() {
       url.searchParams.set("y", String(coords.lat));
     }
 
-    fetch(url.toString(), { headers: { Authorization: "KakaoAK cfa3881ae9ddb68212b45677d60c85ac" } })
+    const proxyUrl = new URL("/api/places/popular", window.location.origin);
+    url.searchParams.forEach((value, key) => proxyUrl.searchParams.set(key, value));
+
+    fetch(proxyUrl.toString())
       .then((r) => r.json())
       .then((data) => setResults(data.documents || []))
       .catch(() => setResults([]))
