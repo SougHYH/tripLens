@@ -65,6 +65,7 @@ function ReviewContent() {
   // ── 리뷰 분석 상태 ──
   const [analysis, setAnalysis] = useState<ReviewAnalysis | null>(null);
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(true);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   // ── 채팅 상태 ──
@@ -200,6 +201,7 @@ function ReviewContent() {
         // 리뷰 분석 데이터 가져오기
         const analysisData = await getReviewAnalysisByKeyword(query, placeId);
         setAnalysis(analysisData);
+        setThumbnailUrl(analysisData.thumbnailUrl ?? null);
 
         const targetPlaceId = placeId || analysisData?.placeId;
 
@@ -473,14 +475,25 @@ function ReviewContent() {
                 </div>
 
                 {/* 장소 이미지 */}
-                {analysis.thumbnailUrl && (
+                {thumbnailUrl && (
                   <div className="w-full h-56 rounded-[28px] overflow-hidden shadow-sm border border-[#F2F1EC]">
                     <img
-                      src={analysis.thumbnailUrl}
+                      src={thumbnailUrl}
                       alt={placeName}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
+                      onError={async () => {
+                        const currentPlaceId = analysis.placeId || placeId;
+                        try {
+                          const res = await fetch(`${API_URL}/places/${currentPlaceId}/refresh-thumbnail`, { method: "POST" });
+                          if (res.ok) {
+                            const data = await res.json();
+                            setThumbnailUrl(data.thumbnailUrl);
+                          } else {
+                            setThumbnailUrl(null);
+                          }
+                        } catch {
+                          setThumbnailUrl(null);
+                        }
                       }}
                     />
                   </div>
