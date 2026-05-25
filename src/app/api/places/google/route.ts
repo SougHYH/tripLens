@@ -49,11 +49,11 @@ export async function GET(request: NextRequest) {
     (p) => (p.rating ?? 0) >= minRating && (p.userRatingCount ?? 0) >= minReviews
   );
 
-  const top6 = places.slice(0, 6);
+  const paged = places.slice(0, 20);
 
   // 사진 URL 병렬 조회 (API 키는 서버에서만 사용)
   const placesWithPhotos = await Promise.all(
-    top6.map(async (place) => {
+    paged.map(async (place) => {
       if (!place.photos?.[0]) return { ...place, photoUrl: null };
       try {
         const photoRes = await fetch(

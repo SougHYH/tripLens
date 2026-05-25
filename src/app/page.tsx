@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, MapPin, Bed, Utensils, HelpCircle, Sparkles, MessageSquare, Map, ChevronRight, Loader2 } from "lucide-react";
+import { Search, MapPin, Bed, Utensils, HelpCircle, Sparkles, MessageSquare, Map, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import SearchBar from "@/components/common/SearchBar";
 import Link from "next/link";
@@ -128,10 +128,14 @@ export default function Home() {
   const [selectedRegion, setSelectedRegion] = useState("서울");
   const [popularPlaces, setPopularPlaces] = useState<GooglePlace[]>([]);
   const [isLoadingPlaces, setIsLoadingPlaces] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const PAGE_SIZE = 3;
+  const STEP = 1;
 
   useEffect(() => {
     const { query } = CATEGORIES[selectedCategory];
     const keyword = `${selectedRegion} ${query}`;
+    setCurrentIndex(0);
     setIsLoadingPlaces(true);
 
     const url = new URL("/api/places/google", window.location.origin);
@@ -143,6 +147,9 @@ export default function Home() {
       .catch(() => setPopularPlaces([]))
       .finally(() => setIsLoadingPlaces(false));
   }, [selectedCategory, selectedRegion]);
+
+  const handlePrev = () => setCurrentIndex((prev) => Math.max(0, prev - STEP));
+  const handleNext = () => setCurrentIndex((prev) => Math.min(prev + STEP, popularPlaces.length - PAGE_SIZE));
 
   useEffect(() => {
     // 처음 세션 확인
@@ -315,54 +322,68 @@ export default function Home() {
               장소 정보를 불러올 수 없습니다.
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-px bg-[#D7D3C8] border-b border-[#D7D3C8]">
-              {popularPlaces.map((place) => (
-                <button
-                  key={place.id}
-                  onClick={() => router.push(`/review?q=${encodeURIComponent(place.displayName.text)}&id=${place.id}&address=${encodeURIComponent(place.shortFormattedAddress || place.formattedAddress)}`)}
-                  className="relative bg-[#EFECE5] text-left hover:bg-white transition-colors duration-300 group overflow-hidden flex flex-col"
+            <div className="relative">
+              <div className="overflow-hidden border-b border-[#D7D3C8]">
+                <div
+                  className="flex transition-transform duration-500 ease-in-out"
+                  style={{ transform: `translateX(-${currentIndex * (100 / PAGE_SIZE)}%)` }}
                 >
-                  {/* 사진 */}
-                  <div className="w-full h-40 overflow-hidden bg-slate-100 shrink-0">
-                    {place.photoUrl ? (
-                      <img
-                        src={place.photoUrl}
-                        alt={place.displayName.text}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-[#E8E5DE] flex items-center justify-center">
-                        <MapPin className="w-6 h-6 text-slate-300" />
+                  {popularPlaces.map((place, i) => (
+                    <button
+                      key={place.id}
+                      onClick={() => router.push(`/review?q=${encodeURIComponent(place.displayName.text)}&id=${place.id}&address=${encodeURIComponent(place.shortFormattedAddress || place.formattedAddress)}`)}
+                      className={`relative bg-[#EFECE5] text-left hover:bg-white transition-colors duration-300 group overflow-hidden flex flex-col flex-shrink-0 ${i < popularPlaces.length - 1 ? "border-r border-[#D7D3C8]" : ""}`}
+                      style={{ width: `${100 / PAGE_SIZE}%` }}
+                    >
+                      <div className="w-full h-40 overflow-hidden bg-slate-100 shrink-0">
+                        {place.photoUrl ? (
+                          <img src={place.photoUrl} alt={place.displayName.text} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        ) : (
+                          <div className="w-full h-full bg-[#E8E5DE] flex items-center justify-center">
+                            <MapPin className="w-6 h-6 text-slate-300" />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  {/* 텍스트 */}
-                  <div className="px-7 py-6 flex flex-col flex-1">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">
-                        {CATEGORIES[selectedCategory].label}
-                      </p>
-                      {place.rating && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-amber-400 text-xs">★</span>
-                          <span className="text-xs font-bold text-slate-500">{place.rating.toFixed(1)}</span>
-                          <span className="text-[10px] text-slate-300 font-medium">({place.userRatingCount?.toLocaleString()})</span>
+                      <div className="px-7 py-6 flex flex-col flex-1">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">{CATEGORIES[selectedCategory].label}</p>
+                          {place.rating && (
+                            <div className="flex items-center gap-1">
+                              <span className="text-amber-400 text-xs">★</span>
+                              <span className="text-xs font-bold text-slate-500">{place.rating.toFixed(1)}</span>
+                              <span className="text-[10px] text-slate-300 font-medium">({place.userRatingCount?.toLocaleString()})</span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <h3 className="font-black text-slate-900 text-lg mb-1.5 leading-snug line-clamp-1">
-                      {place.displayName.text}
-                    </h3>
-                    <p className="text-xs text-slate-400 font-medium leading-relaxed line-clamp-1">
-                      {place.shortFormattedAddress || place.formattedAddress}
-                    </p>
-                    <div className="mt-5 flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold text-slate-300 group-hover:text-slate-600 transition-colors duration-300">리뷰 분석</span>
-                      <ChevronRight className="w-3 h-3 text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all duration-300" />
-                    </div>
-                  </div>
+                        <h3 className="font-black text-slate-900 text-lg mb-1.5 leading-snug line-clamp-1">{place.displayName.text}</h3>
+                        <p className="text-xs text-slate-400 font-medium leading-relaxed line-clamp-1">{place.shortFormattedAddress || place.formattedAddress}</p>
+                        <div className="mt-5 flex items-center gap-1.5">
+                          <span className="text-[11px] font-bold text-slate-300 group-hover:text-slate-600 transition-colors duration-300">리뷰 분석</span>
+                          <ChevronRight className="w-3 h-3 text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all duration-300" />
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="absolute -left-6 top-1/2 -translate-y-1/2">
+                <button
+                  onClick={handlePrev}
+                  disabled={currentIndex === 0}
+                  className="w-12 h-12 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#E2DFD6] flex items-center justify-center text-slate-700 hover:bg-slate-900 hover:text-white hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-700 disabled:hover:shadow-[0_4px_20px_rgba(0,0,0,0.12)]"
+                >
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
-              ))}
+              </div>
+              <div className="absolute -right-6 top-1/2 -translate-y-1/2">
+                <button
+                  onClick={handleNext}
+                  disabled={currentIndex + STEP + PAGE_SIZE > popularPlaces.length}
+                  className="w-12 h-12 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#E2DFD6] flex items-center justify-center text-slate-700 hover:bg-slate-900 hover:text-white hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-slate-700 disabled:hover:shadow-[0_4px_20px_rgba(0,0,0,0.12)]"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           )}
         </div>
