@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from "@/lib/supabase";
+import { Star, MapPin } from "lucide-react";
+import { addRecentPlace } from "@/lib/recentPlaces";
+import { getRecentPlaces, RecentPlace } from "@/lib/recentPlaces";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -14,155 +17,10 @@ const DS = {
   borderHover: '1px solid #d4cfc6',
   shadow: '0 4px 16px rgba(0,0,0,0.04)',
   shadowHover: '0 20px 40px rgba(0,0,0,0.10)',
-  cardBg: 'rgba(255,255,255,0.6)',
-  cardBgHover: '#fff',
+  cardBg: 'rgba(255,255,255,0.92)',
+  cardBgHover: 'rgba(255,255,255,0.98)',
   transition: 'all 0.3s cubic-bezier(.22,.61,.36,1)',
 };
-
-/* ═══ 추천 장소 더미 데이터 ═══ */
-interface RecommendedPlace {
-  id: string;
-  name: string;
-  description: string;
-  region: string;
-  tags: string[];
-  rating: number;
-  reviewCount: number;
-  imageUrl: string;
-  placeId: string;
-  address: string;
-}
-
-const SEARCH_HISTORY_KEY = 'tripLens_searchHistory';
-const MAX_HISTORY = 30;
-
-function getSearchHistory(): string[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(SEARCH_HISTORY_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
-}
-
-function scorePlace(place: RecommendedPlace, history: string[]): number {
-  if (history.length === 0) return 0;
-  let score = 0;
-  const lowerHistory = history.map(h => h.toLowerCase());
-  for (const tag of place.tags) {
-    const lowerTag = tag.toLowerCase();
-    for (let i = 0; i < lowerHistory.length; i++) {
-      const h = lowerHistory[i];
-      if (h.includes(lowerTag) || lowerTag.includes(h)) {
-        score += (MAX_HISTORY - i);
-      }
-    }
-  }
-  const lowerRegion = place.region.toLowerCase();
-  for (let i = 0; i < lowerHistory.length; i++) {
-    if (lowerHistory[i].includes(lowerRegion) || lowerRegion.includes(lowerHistory[i])) {
-      score += (MAX_HISTORY - i) * 2;
-    }
-  }
-  const lowerName = place.name.toLowerCase();
-  for (let i = 0; i < lowerHistory.length; i++) {
-    if (lowerHistory[i].includes(lowerName) || lowerName.includes(lowerHistory[i])) {
-      score += (MAX_HISTORY - i) * 3;
-    }
-  }
-  return score;
-}
-
-const RECOMMENDED_PLACES: RecommendedPlace[] = [
-  {
-    id: '1', name: '감천문화마을', description: '알록달록 지붕이 만드는 부산의 마추픽추', region: '부산',
-    tags: ['부산', '마을', '문화', '사진', '여행지', '관광', '포토스팟'], rating: 4.5, reviewCount: 2847,
-    imageUrl: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=600&h=400&fit=crop',
-    placeId: 'ChIJgUbEo8cfqwcR-gZb6Y2r-cQ', address: '부산 사하구 감내2로 203',
-  },
-  {
-    id: '2', name: '경복궁', description: '600년 역사가 숨 쉬는 조선의 첫 궁궐', region: '서울',
-    tags: ['서울', '궁궐', '역사', '한복', '여행지', '관광', '전통'], rating: 4.7, reviewCount: 12503,
-    imageUrl: '/images/gyeongbokgung.jpg',
-    placeId: 'ChIJm7oRy-OYfDUR5PKrM5K9Rp0', address: '서울 종로구 사직로 161',
-  },
-  {
-    id: '3', name: '월정리 해변', description: '에메랄드빛 바다와 하얀 모래의 제주 명소', region: '제주',
-    tags: ['제주', '해변', '바다', '자연', '여행지', '해수욕장', '서핑'], rating: 4.4, reviewCount: 3291,
-    imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=400&fit=crop',
-    placeId: 'ChIJ4Z2fO8rrDDURzPR8g4K-5eQ', address: '제주 제주시 구좌읍 월정리',
-  },
-  {
-    id: '4', name: '안동 하회마을', description: '낙동강이 감싸는 유네스코 세계유산 마을', region: '경북',
-    tags: ['안동', '경북', '마을', '전통', '역사', '유네스코', '여행지'], rating: 4.6, reviewCount: 1876,
-    imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&h=400&fit=crop',
-    placeId: 'ChIJ-0kFUH6jfzUR4hLGEjq5mQo', address: '경북 안동시 풍천면 하회종가길 40',
-  },
-  {
-    id: '5', name: '남이섬', description: '사계절 드라마처럼 펼쳐지는 자연 속 섬', region: '강원',
-    tags: ['강원', '춘천', '자연', '섬', '드라마', '여행지', '데이트'], rating: 4.3, reviewCount: 5420,
-    imageUrl: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600&h=400&fit=crop',
-    placeId: 'ChIJN1t_tDeuEmsRUsoyG83frY4', address: '강원 춘천시 남산면 남이섬길 1',
-  },
-  {
-    id: '6', name: '전주 한옥마을', description: '전통과 트렌드가 공존하는 한옥 거리', region: '전북',
-    tags: ['전주', '전북', '한옥', '맛집', '전통', '비빔밥', '여행지'], rating: 4.4, reviewCount: 8763,
-    imageUrl: '/images/jeonju_hanok.jpg',
-    placeId: 'ChIJnUsfH2ZdYTURWJP4xBT9HwQ', address: '전북 전주시 완산구 기린대로 99',
-  },
-  {
-    id: '7', name: '해운대 해수욕장', description: '도심 속 활기 넘치는 부산 대표 해변', region: '부산',
-    tags: ['부산', '해변', '바다', '해수욕장', '여행지', '관광', '야경'], rating: 4.3, reviewCount: 15230,
-    imageUrl: 'https://images.unsplash.com/photo-1590523741831-ab7e8b8f9c7f?w=600&h=400&fit=crop',
-    placeId: 'ChIJHaeunYKefDURtMJoiRpPbF0', address: '부산 해운대구 해운대해변로 264',
-  },
-  {
-    id: '8', name: '북촌 한옥마을', description: '서울 도심에서 만나는 600년 한옥 골목', region: '서울',
-    tags: ['서울', '한옥', '전통', '사진', '포토스팟', '관광', '골목'], rating: 4.5, reviewCount: 9841,
-    imageUrl: 'https://images.unsplash.com/photo-1601042879364-f3947d3f9c16?w=600&h=400&fit=crop',
-    placeId: 'ChIJBwWajuCYfDUR3PKrM8K2Abc', address: '서울 종로구 계동길 37',
-  },
-  {
-    id: '9', name: '성산일출봉', description: '제주 동쪽 끝 장엄한 일출의 성지', region: '제주',
-    tags: ['제주', '자연', '등산', '일출', '유네스코', '화산', '여행지'], rating: 4.6, reviewCount: 7654,
-    imageUrl: 'https://images.unsplash.com/photo-1578469550956-0e16b69c6a3d?w=600&h=400&fit=crop',
-    placeId: 'ChIJQRyLrMrrDDURoCj2g6a8Xw0', address: '제주 서귀포시 성산읍 성산리',
-  },
-  {
-    id: '10', name: '광장시장', description: '서울 한복판 활기 넘치는 전통 먹거리 천국', region: '서울',
-    tags: ['서울', '맛집', '시장', '먹거리', '전통', '야시장', '길거리음식'], rating: 4.2, reviewCount: 6312,
-    imageUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop',
-    placeId: 'ChIJuwtkpLiYfDURZhHmAl3p8Hc', address: '서울 종로구 창경궁로 88',
-  },
-  {
-    id: '11', name: '속초 중앙시장', description: '동해 바다 향이 가득한 강원도 대표 시장', region: '강원',
-    tags: ['강원', '속초', '맛집', '시장', '먹거리', '해산물', '여행지'], rating: 4.3, reviewCount: 4521,
-    imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop',
-    placeId: 'ChIJk6-FnN6kfDURdF91Lm2CAQs', address: '강원 속초시 중앙로 147번길 16',
-  },
-  {
-    id: '12', name: '여수 밤바다', description: '노래처럼 낭만적인 남해안 야경 명소', region: '전남',
-    tags: ['여수', '전남', '야경', '바다', '데이트', '낭만', '여행지'], rating: 4.5, reviewCount: 6890,
-    imageUrl: 'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=600&h=400&fit=crop',
-    placeId: 'ChIJE2vqOdxyZTUR4EGDaxKv3OQ', address: '전남 여수시 하멜로 50',
-  },
-];
-
-/* ═══ 별점 렌더 ═══ */
-function StarRating({ rating }: { rating: number }) {
-  const full = Math.floor(rating);
-  const hasHalf = rating - full >= 0.3;
-  const stars: React.ReactElement[] = [];
-  for (let i = 0; i < 5; i++) {
-    if (i < full) {
-      stars.push(<svg key={i} width="13" height="13" viewBox="0 0 24 24" fill="#f59e0b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>);
-    } else if (i === full && hasHalf) {
-      stars.push(<svg key={i} width="13" height="13" viewBox="0 0 24 24"><defs><linearGradient id={`half-${i}`}><stop offset="50%" stopColor="#f59e0b" /><stop offset="50%" stopColor="#d4d0c8" /></linearGradient></defs><path fill={`url(#half-${i})`} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>);
-    } else {
-      stars.push(<svg key={i} width="13" height="13" viewBox="0 0 24 24" fill="#d4d0c8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>);
-    }
-  }
-  return <div style={{ display: 'flex', gap: '2px', alignItems: 'center' }}>{stars}</div>;
-}
 
 
 export default function MyPage() {
@@ -174,25 +32,9 @@ export default function MyPage() {
   const [favorites, setFavorites] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [recommendedPlaces, setRecommendedPlaces] = useState<RecommendedPlace[]>([]);
-
   const [hoveredFav, setHoveredFav] = useState<number | null>(null);
-
-  useEffect(() => {
-    const history = getSearchHistory();
-    if (history.length === 0) {
-      const sorted = [...RECOMMENDED_PLACES].sort((a, b) => b.rating - a.rating).slice(0, 8);
-      setRecommendedPlaces(sorted);
-    } else {
-      const scored = RECOMMENDED_PLACES.map(p => ({ place: p, score: scorePlace(p, history) }));
-      scored.sort((a, b) => b.score - a.score || b.place.rating - a.place.rating);
-      setRecommendedPlaces(scored.map(s => s.place).slice(0, 8));
-    }
-  }, []);
+  const [recentPlaces, setRecentPlaces] = useState<RecentPlace[]>([]);
+  const [hoveredRecent, setHoveredRecent] = useState<number | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -213,33 +55,9 @@ export default function MyPage() {
         })
         .catch(() => setFavorites([]))
         .finally(() => setIsLoading(false));
+      setRecentPlaces(getRecentPlaces());
     });
   }, []);
-
-  const updateScrollButtons = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
-  };
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    updateScrollButtons();
-    el.addEventListener('scroll', updateScrollButtons, { passive: true });
-    window.addEventListener('resize', updateScrollButtons);
-    return () => {
-      el.removeEventListener('scroll', updateScrollButtons);
-      window.removeEventListener('resize', updateScrollButtons);
-    };
-  }, []);
-
-  const scroll = (dir: 'left' | 'right') => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir === 'left' ? -300 : 300, behavior: 'smooth' });
-  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -256,16 +74,116 @@ export default function MyPage() {
     return local.slice(0, 4) + '****@' + domain;
   })();
   return (
-    <div className="min-h-screen" style={{ background: '#f6f2eb' }}>
+    <div className="min-h-screen bg-[#F0E8DE] text-slate-950 font-sans tracking-tight relative overflow-hidden flex flex-col">
       <style>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(16px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .hide-scroll::-webkit-scrollbar { display: none; }
+  .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
+  .map-paper {
+    background:
+      radial-gradient(circle at 18% 16%, rgba(255,255,255,0.74), transparent 28%),
+      radial-gradient(circle at 82% 20%, rgba(221,183,150,0.34), transparent 30%),
+      radial-gradient(circle at 68% 82%, rgba(97,126,110,0.16), transparent 32%),
+      linear-gradient(135deg, #f6eee5 0%, #eadfd4 50%, #f5eadf 100%);
+  }
+  .lens {
+    box-shadow:
+      inset 10px 10px 26px rgba(92, 69, 57, 0.18),
+      inset -10px -10px 22px rgba(255, 255, 255, 0.72),
+      0 26px 70px rgba(72, 50, 42, 0.24);
+  }
+  .photo-rich {
+    filter: saturate(1.13) contrast(1.07) brightness(0.98);
+  }
+`}</style>
+      {/* ── 배경 레이어 시작 ── */}
+
+      {/* 레이어1: 기본 그라데이션 배경 */}
+      <div className="fixed inset-0 map-paper pointer-events-none" />
+
+      {/* 레이어2: SVG 지도 패턴 */}
+      <div className="fixed inset-0 pointer-events-none z-[1]">
+        <svg className="w-full h-full" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <pattern id="mainGrid" width="96" height="96" patternUnits="userSpaceOnUse">
+              <path d="M 96 0 L 0 0 0 96" fill="none" stroke="#b9aaa0" strokeWidth="1.4" opacity="0.46" />
+            </pattern>
+            <filter id="routeShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="8" stdDeviation="7" floodColor="#5b4136" floodOpacity="0.18" />
+            </filter>
+          </defs>
+          <rect width="1600" height="1000" fill="url(#mainGrid)" />
+          <g opacity="0.3" fill="none" stroke="#9a887d" strokeLinecap="round">
+            <path d="M-70,110 C25,80 36,155 95,118 C145,88 154,40 220,58 C280,75 270,140 352,116" strokeWidth="2" />
+            <path d="M-60,770 C38,720 80,832 160,778 C248,718 250,650 365,686 C445,710 452,805 560,760" strokeWidth="2" />
+            <path d="M1280,36 C1362,112 1478,26 1532,92 C1590,165 1478,198 1538,250 C1592,298 1665,248 1692,330" strokeWidth="2" />
+            <path d="M1215,870 C1305,815 1372,906 1448,850 C1520,796 1585,812 1668,748" strokeWidth="2" />
+          </g>
+          <g filter="url(#routeShadow)" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M-70 235 C55 235 170 235 275 235 C365 235 420 290 420 380 C420 468 430 535 407 594 C386 648 356 674 316 692 C298 700 281 706 268 713 C210 734 172 782 118 806 C58 833 -2 860 -60 886" stroke="#9C877F" strokeWidth="16" />
+            <path d="M460 104 C555 104 612 154 650 225 C684 288 716 353 752 415 C780 468 830 498 890 498 C970 498 1050 498 1125 498 C1180 498 1218 475 1248 430 C1278 386 1308 339 1338 294 C1376 236 1430 218 1496 218 C1560 218 1625 218 1690 218" stroke="#B88A62" strokeWidth="16" />
+            <path d="M570 1010 C604 940 632 884 662 835 C690 780 732 752 792 752 C838 752 885 752 930 752 C985 752 1024 724 1048 675 C1068 633 1086 595 1106 560 C1136 500 1185 470 1252 470 C1302 470 1360 470 1410 470 C1505 470 1600 470 1690 470" stroke="#8C6F5A" strokeWidth="16" />
+          </g>
+          <g fill="#fffaf6" stroke="#3F2E2A" strokeWidth="7">
+            <circle cx="420" cy="235" r="18" />
+            <circle cx="268" cy="713" r="18" />
+            <circle cx="1248" cy="430" r="18" />
+            <circle cx="1410" cy="470" r="18" />
+            <circle cx="1496" cy="218" r="18" />
+            <circle cx="792" cy="752" r="18" />
+          </g>
+          <g opacity="0.24" stroke="#8c7b72" strokeWidth="2" fill="none">
+            <path d="M235 130 H420 M235 130 V315" />
+            <path d="M1250 105 H1455 M1455 105 V305" />
+            <path d="M1125 835 C1185 800 1238 845 1294 812 C1356 776 1412 818 1470 790 C1528 762 1580 786 1645 748" />
+            <path d="M1175 888 C1230 858 1286 902 1342 868 C1396 836 1448 872 1505 842 C1565 810 1618 834 1685 798" />
+          </g>
+        </svg>
+      </div>
+
+      {/* 레이어3: 별 장식 (데스크톱만) */}
+      <div className="fixed inset-0 pointer-events-none z-[2] hidden lg:block">
+        <Star size={152} className="absolute left-[6%] top-[32%] rotate-[-14deg] fill-[#D8A63A] text-[#B8861D] opacity-30 drop-shadow-[0_18px_34px_rgba(86,64,28,0.18)]" strokeWidth={1.35} />
+        <Star size={124} className="absolute right-[15%] bottom-[15%] rotate-[10deg] fill-[#E7BE63] text-[#B8861D] opacity-28 drop-shadow-[0_18px_34px_rgba(86,64,28,0.16)]" strokeWidth={1.35} />
+        <Star size={118} className="absolute left-[37%] bottom-[18%] rotate-[-8deg] fill-[#C89535] text-[#8C6F5A] opacity-24 drop-shadow-[0_18px_34px_rgba(86,64,28,0.14)]" strokeWidth={1.35} />
+        <Star size={194} className="absolute right-[32%] top-[19%] rotate-[18deg] fill-[#F0C969] text-[#B88A62] opacity-24 drop-shadow-[0_18px_34px_rgba(86,64,28,0.14)]" strokeWidth={1.35} />
+      </div>
+
+      {/* 레이어4: 원형 사진 + 텍스트 장식 (데스크톱만) */}
+      <div className="fixed inset-0 pointer-events-none z-[2] hidden lg:block">
+        <div className="absolute left-[19%] top-[11%] h-64 w-64 rounded-full border-[10px] border-[#9C877F]/85 bg-white/16 lens overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=700&q=80" alt="" className="photo-rich h-full w-full object-cover opacity-90" />
+          <div className="absolute inset-0 bg-[#f4e6dc]/12" />
+        </div>
+        <div className="absolute left-[16.8%] top-[42%] text-[72px] font-black tracking-tighter text-[#7e7773]/32">여행지</div>
+        <div className="absolute left-[29.2%] top-[45%] flex h-20 w-20 items-center justify-center rounded-full bg-[#8C6F5A] shadow-[0_18px_45px_rgba(140,111,90,0.35)]">
+          <MapPin size={38} className="text-white" strokeWidth={2.6} />
+        </div>
+        <div className="absolute right-[3.4%] top-[14%] h-[350px] w-[350px] rounded-full border-[16px] border-[#c4b0a5]/90 bg-white/16 lens overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80" alt="" className="photo-rich h-full w-full object-cover opacity-84" />
+          <div className="absolute inset-0 bg-[#f1ded3]/24" />
+          <div className="absolute inset-[64px] rounded-full border-[16px] border-[#a98f87]/42 border-b-transparent" />
+        </div>
+        <div className="absolute right-[20%] top-[20%] text-[72px] font-black tracking-tighter text-[#7e7773]/32">호텔</div>
+        <div className="absolute left-[46%] bottom-[4.5%] h-56 w-56 rounded-full border-[10px] border-[#c4b0a5]/90 bg-white/14 lens overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80" alt="" className="photo-rich h-full w-full object-cover opacity-86" />
+          <div className="absolute inset-0 bg-[#f4e6dc]/18" />
+          <div className="absolute inset-[48px] rounded-full border-[12px] border-[#a98f87]/42 border-b-transparent" />
+        </div>
+        <div className="absolute left-[48.5%] bottom-[25%] text-[64px] font-black tracking-tighter text-[#7e7773]/30">식당</div>
+        <div className="absolute right-[2%] top-[41%] h-24 w-24 rounded-full bg-[#9C877F]/36 blur-sm" />
+        <div className="absolute left-[24%] bottom-[2%] h-28 w-28 rounded-full bg-[#9C877F]/26 blur-sm" />
+      </div>
+
+      {/* 레이어5: 오버레이 그라데이션 + 블러 */}
+      <div className="fixed inset-0 pointer-events-none z-[3] bg-gradient-to-b from-[#F0E8DE]/85 via-[#F0E8DE]/70 to-[#F0E8DE]/85" />
+      <div className="fixed left-1/2 top-[92px] z-[4] h-60 w-[760px] max-w-[92vw] -translate-x-1/2 rounded-full bg-[#f3ebe2]/72 blur-3xl pointer-events-none" />
+
+      {/* ── 배경 레이어 끝 ── */}
       {showToast && (
         <div className="fixed inset-0 z-50 flex items-start pt-24 justify-center pointer-events-none">
           <div className="px-8 py-4 rounded-2xl shadow-lg bg-[#1e293b] text-[#faf8f4] text-base font-medium animate-fade-in">
@@ -281,7 +199,7 @@ export default function MyPage() {
         </a>
       </nav>
 
-      <main style={{ maxWidth: '1152px', margin: '0 auto', padding: '32px 24px 48px' }}>
+      <main className="relative z-10 flex-1" style={{ maxWidth: '1152px', margin: '0 auto', padding: '32px 24px 48px' }}>
 
         {/* ═══════════════════════════════════
             1. 프로필 헤더 — 존재감 + compact
@@ -294,7 +212,7 @@ export default function MyPage() {
           gap: '16px',
           marginBottom: '44px',
           padding: '26px 30px',
-          background: '#fff',
+          background: 'rgba(255,255,255,0.95)',
           borderRadius: DS.radius,
           border: '1px solid rgba(255,255,255,0.8)',
           boxShadow: DS.shadow,
@@ -338,7 +256,7 @@ export default function MyPage() {
               <h1 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px', lineHeight: '1.3', margin: 0 }}>
                 {displayName}님, 오늘도 여행을 떠나볼까요?
               </h1>
-              <p style={{ fontSize: '13px', color: '#64748b', marginTop: '6px', margin: 0, letterSpacing: '0.2px' }}>
+              <p style={{ fontSize: '13px', color: '#64748b', marginTop: '6px', marginBottom: 0, marginLeft: 0, marginRight: 0, letterSpacing: '0.2px' }}>
                 {maskedEmail}
               </p>
             </div>
@@ -384,11 +302,11 @@ export default function MyPage() {
               style={{
                 display: 'flex', alignItems: 'center', gap: '4px',
                 background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: '13px', fontWeight: 700, color: '#94a3b8',
+                fontSize: '13px', fontWeight: 700, color: '#1e293b',
                 padding: '6px 10px', borderRadius: '8px', transition: DS.transition,
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = '#1e293b'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = '#94a3b8'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#0f172a'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = '#64748b'; }}
             >
               전체보기
               <svg style={{ width: '14px', height: '14px' }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -416,7 +334,7 @@ export default function MyPage() {
                       maxWidth: '280px',
                       overflow: 'hidden',
                       scrollSnapAlign: 'start',
-                      padding: '24px',
+                      padding: '28px',
                       background: isHov ? DS.cardBgHover : DS.cardBg,
                       borderRadius: DS.radius,
                       border: isHov ? DS.borderHover : DS.border,
@@ -427,10 +345,13 @@ export default function MyPage() {
                       animation: `fadeInUp 0.4s ease ${index * 0.06}s both`,
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '16px',
+                      gap: '20px',
                       position: 'relative',
                     }}
-                    onClick={() => router.push(`/review?q=${encodeURIComponent(item.name)}&id=${encodeURIComponent(item.placeId)}&address=${encodeURIComponent(item.address)}&from=mypage`)}
+                    onClick={() => {
+                      addRecentPlace({ id: item.placeId, name: item.name, address: item.address });
+                      router.push(`/review?q=${encodeURIComponent(item.name)}&id=${encodeURIComponent(item.placeId)}&address=${encodeURIComponent(item.address)}&from=mypage`);
+                    }}
                   >
                     {/* 우측 상단 채워진 별 아이콘 */}
                     <div style={{
@@ -509,112 +430,214 @@ export default function MyPage() {
             </div>
           )}
         </section>
-
         {/* ═══════════════════════════════════
-            3. 추천 장소 캐러셀 (기존 유지 + radius 통일)
+            3. 최근 본 여행지 — 그라데이션 카드
             ═══════════════════════════════════ */}
         <section style={{ marginBottom: '48px' }}>
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
                 width: '32px', height: '32px', borderRadius: DS.radiusSm,
-                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(245,158,11,0.25)',
+                background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <svg style={{ width: '17px', height: '17px' }} fill="none" stroke="#fff" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="#a5b4fc" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>당신을 위한 추천 장소</h2>
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px' }}>최근 본 여행지</h2>
             </div>
           </div>
 
-          <div style={{ position: 'relative' }}>
-            {canScrollLeft && (
-              <button onClick={() => scroll('left')} aria-label="이전" style={{
-                position: 'absolute', left: '-16px', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
-                width: '40px', height: '40px', borderRadius: '50%', border: DS.border,
-                background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.08)', transition: DS.transition,
-              }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; }}>
-                <svg width="16" height="16" fill="none" stroke="#1e293b" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
-              </button>
-            )}
-            {canScrollRight && (
-              <button onClick={() => scroll('right')} aria-label="다음" style={{
-                position: 'absolute', right: '-16px', top: '50%', transform: 'translateY(-50%)', zIndex: 10,
-                width: '40px', height: '40px', borderRadius: '50%', border: DS.border,
-                background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.08)', transition: DS.transition,
-              }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; }}>
-                <svg width="16" height="16" fill="none" stroke="#1e293b" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
-              </button>
-            )}
+          {recentPlaces.length > 0 ? (
+            <div className="hide-scroll" style={{ display: 'flex', gap: '16px', padding: '4px 2px 12px', overflowX: 'auto', scrollSnapType: 'x mandatory' }}>
+              {recentPlaces.map((item, index) => {
+                const isHov = hoveredRecent === index;
 
-            <div ref={scrollRef} className="hide-scroll" style={{ display: 'flex', gap: '20px', overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '8px 4px 16px' }}>
-              {recommendedPlaces.map((place, idx) => {
-                const isHovered = hoveredCard === place.id;
+                // 장소 이름 기반 고유 색상 생성
+                const hash = item.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+                const gradients = [
+                  ['#f0d9d9', '#e8c4c4'],
+                  ['#e8d5df', '#ddc4d4'],
+                  ['#ddd5e8', '#d0c4dd'],
+                  ['#d5dde8', '#c4d0dd'],
+                  ['#d5e5e0', '#c4d8d0'],
+                  ['#e8ddd5', '#ddd0c4'],
+                  ['#e5d5d9', '#d8c4cc'],
+                  ['#ddd5d9', '#d0c8cc'],
+                ];
+
+                const [from, to] = gradients[hash % gradients.length];
+
+                const emojis = ['🏛️', '🌊', '🏔️', '🌸', '🎡', '🏰', '⛩️', '🌅'];
+                const emoji = emojis[hash % emojis.length];
+
+                const timeAgo = (() => {
+                  const diff = Date.now() - item.visitedAt;
+                  const mins = Math.floor(diff / 60000);
+                  if (mins < 1) return '방금 전';
+                  if (mins < 60) return `${mins}분 전`;
+                  const hours = Math.floor(mins / 60);
+                  if (hours < 24) return `${hours}시간 전`;
+                  const days = Math.floor(hours / 24);
+                  return `${days}일 전`;
+                })();
+
                 return (
                   <div
-                    key={place.id}
-                    onClick={() => router.push(`/review?q=${encodeURIComponent(place.name)}&id=${encodeURIComponent(place.placeId)}&address=${encodeURIComponent(place.address)}&from=mypage`)}
-                    onMouseEnter={() => setHoveredCard(place.id)}
-                    onMouseLeave={() => setHoveredCard(null)}
+                    key={item.id}
+                    onMouseEnter={() => setHoveredRecent(index)}
+                    onMouseLeave={() => setHoveredRecent(null)}
+                    onClick={() => router.push(`/review?q=${encodeURIComponent(item.name)}&id=${encodeURIComponent(item.id)}&address=${encodeURIComponent(item.address)}&from=mypage`)}
                     style={{
-                      flex: '0 0 280px', scrollSnapAlign: 'start',
-                      borderRadius: DS.radius, overflow: 'hidden',
-                      background: '#fff', border: isHovered ? DS.borderHover : DS.border,
-                      cursor: 'pointer', transition: DS.transition,
-                      transform: isHovered ? 'translateY(-5px)' : 'translateY(0)',
-                      boxShadow: isHovered ? DS.shadowHover : DS.shadow,
-                      animation: `fadeInUp 0.5s ease ${idx * 0.07}s both`,
+                      flex: '1 1 0',
+                      minWidth: '200px',
+                      maxWidth: '280px',
+                      borderRadius: '28px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: DS.transition,
+                      transform: isHov ? 'translateY(-6px) scale(1.02)' : 'translateY(0) scale(1)',
+                      boxShadow: isHov
+                        ? '0 24px 48px rgba(0,0,0,0.15)'
+                        : '0 8px 24px rgba(0,0,0,0.06)',
+                      animation: `fadeInUp 0.4s ease ${index * 0.08}s both`,
+                      scrollSnapAlign: 'start',
                     }}
                   >
-                    <div style={{ position: 'relative', width: '100%', height: '180px', overflow: 'hidden' }}>
-                      <img src={place.imageUrl} alt={place.name} loading="lazy" style={{
-                        width: '100%', height: '100%', objectFit: 'cover',
-                        transition: 'transform 0.5s cubic-bezier(.22,.61,.36,1)',
-                        transform: isHovered ? 'scale(1.08)' : 'scale(1)',
+                    {/* 상단 그라데이션 영역 */}
+                    <div style={{
+                      position: 'relative',
+                      height: '120px',
+                      background: `linear-gradient(135deg, ${from}, ${to})`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                    }}>
+                      {/* 장식 원들 */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '-20px',
+                        right: '-20px',
+                        width: '100px',
+                        height: '100px',
+                        borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.15)',
                       }} />
-                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '60px', background: 'linear-gradient(to top, rgba(0,0,0,0.35), transparent)', pointerEvents: 'none' }} />
-                      <div style={{ position: 'absolute', top: '14px', left: '14px', padding: '5px 12px', borderRadius: '99px', background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(6px)', fontSize: '11px', fontWeight: 700, color: '#1e293b', letterSpacing: '0.3px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                        {place.region}
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '-30px',
+                        left: '-10px',
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.1)',
+                      }} />
+
+                      {/* 이모지 */}
+                      <span style={{
+                        fontSize: '50px',
+                        filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))',
+                        transition: 'transform 0.4s ease',
+                        transform: isHov ? 'scale(1.15) rotate(-5deg)' : 'scale(1) rotate(0deg)',
+                      }}>
+                        {emoji}
+                      </span>
+
+                      {/* 시간 태그 */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '14px',
+                        right: '14px',
+                        background: 'rgba(255,255,255,0.55)',
+                        backdropFilter: 'blur(8px)',
+                        color: '#5c4a42',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        padding: '5px 12px',
+                        borderRadius: '99px',
+                      }}>
+                        {timeAgo}
                       </div>
-                      {place.reviewCount >= 5000 && (
-                        <div style={{ position: 'absolute', top: '14px', right: '14px', padding: '5px 10px', borderRadius: '99px', background: 'rgba(245,158,11,0.90)', backdropFilter: 'blur(6px)', fontSize: '10px', fontWeight: 800, color: '#fff', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="#fff"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                          인기
-                        </div>
-                      )}
                     </div>
-                    <div style={{ padding: '18px 20px 20px' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#0f172a', marginBottom: '6px', letterSpacing: '-0.2px' }}>{place.name}</h3>
-                      <p style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.45', marginBottom: '14px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{place.description}</p>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <StarRating rating={place.rating} />
-                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#1e293b' }}>{place.rating}</span>
-                        </div>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>리뷰 {place.reviewCount.toLocaleString()}개</span>
+
+                    {/* 하단 정보 영역 */}
+                    <div style={{
+                      padding: '16px 18px',
+                      background: isHov ? 'rgba(255,255,255,0.98)' : 'rgba(255,255,255,0.94)',
+                      transition: DS.transition,
+                    }}>
+                      <div style={{
+                        fontSize: '16px',
+                        fontWeight: 800,
+                        color: '#0f172a',
+                        letterSpacing: '-0.3px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        marginBottom: '6px',
+                      }}>
+                        {item.name}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#94a3b8',
+                        fontWeight: 500,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        marginBottom: '14px',
+                      }}>
+                        {item.address || '주소 정보 없음'}
+                      </div>
+
+                      <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 16px',
+                        borderRadius: '99px',
+                        background: isHov ? '#1e293b' : '#f4f1ec',
+                        color: isHov ? '#fff' : '#64748b',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        transition: DS.transition,
+                      }}>
+                        <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                        AI 리포트 보기
                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
+          ) : (
+            <div style={{
+              padding: '48px',
+              textAlign: 'center',
+              background: 'rgba(255,255,255,0.92)',
+              borderRadius: DS.radius,
+              border: DS.border,
+              boxShadow: DS.shadow,
+            }}>
+              <div style={{ fontSize: '32px', marginBottom: '12px', opacity: 0.3 }}>🕐</div>
+              <p style={{ color: '#9b9488', fontSize: '14px', fontWeight: 500 }}>최근 본 여행지가 없습니다</p>
+              <button
+                onClick={() => router.push('/')}
+                style={{ marginTop: '16px', padding: '10px 24px', background: '#1e293b', color: '#fff', border: 'none', borderRadius: '99px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: DS.transition }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.03)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+              >
+                장소 검색하러 가기
+              </button>
+            </div>
+          )}
         </section>
       </main>
 
-      <footer style={{ borderTop: '1px solid #e0dbd3', background: 'rgba(250,248,244,0.5)', padding: '32px 0', marginTop: '48px' }}>
+      <footer className="relative z-10" style={{ borderTop: '1px solid #e0dbd3', background: 'rgba(250,248,244,0.5)', padding: '32px 0', marginTop: '48px' }}>
         <div style={{ textAlign: 'center', fontSize: '14px', color: '#9b9488' }}>© 2026 캡스톤디자인 3조 코더사이저</div>
       </footer>
     </div>
