@@ -228,7 +228,7 @@ export default function FavoritesPage() {
 
     const targetIndex = direction === "up" ? index - 1 : index + 1;
     const updatedFolders = [...folders];
-    
+
     // 두 폴더의 위치를 교환(Swap)
     const temp = updatedFolders[index];
     updatedFolders[index] = updatedFolders[targetIndex];
@@ -487,7 +487,7 @@ export default function FavoritesPage() {
       <div className="fixed inset-0 pointer-events-none z-[3] bg-gradient-to-b from-[#F0E8DE]/58 via-[#F0E8DE]/18 to-[#F0E8DE]/68" />
       <div className="fixed left-1/2 top-[92px] z-[4] h-60 w-[760px] max-w-[92vw] -translate-x-1/2 rounded-full bg-[#f3ebe2]/72 blur-3xl pointer-events-none" />
 
-      <nav className="relative z-20 flex items-center p-6 px-12 border-b border-[#D7D3C8] bg-[#EFECE5]/86 backdrop-blur-md sticky top-0">
+      <nav className="relative z-20 flex items-center p-6 px-12 border-b border-[#EAE6DC] bg-[#FEFDFC]/90 backdrop-blur-md sticky top-0 shadow-[0_4px_24px_rgba(92,69,57,0.04)]">
         <Link href="/" className="text-2xl font-black tracking-tighter text-slate-900" style={{ textDecoration: "none" }}>
           여행 돋보기
         </Link>
@@ -541,13 +541,12 @@ export default function FavoritesPage() {
                       onClick={handleRandomRecommend}
                       disabled={randomButtonDisabled}
                       title={visibleFavorites.length === 0 ? "이 폴더에는 추천할 장소가 없습니다." : "랜덤 장소 추천"}
-                      className={`relative overflow-hidden flex items-center gap-2 rounded-full border px-6 py-3 text-[13px] font-black shadow-sm transition-all ${
-                        visibleFavorites.length === 0
+                      className={`relative overflow-hidden flex items-center gap-2 rounded-full border px-6 py-3 text-[13px] font-black shadow-sm transition-all ${visibleFavorites.length === 0
                           ? "cursor-not-allowed border-[#E8DED2] bg-[#EFE4D8] text-[#9C877F] opacity-90"
                           : isShuffling
                             ? "cursor-wait border-[#D8A63A]/45 bg-[#1f2937] text-white shadow-[0_18px_45px_rgba(31,41,55,0.22)]"
                             : "cursor-pointer border-[#D8A63A]/45 bg-[#1f2937] text-white shadow-[0_18px_45px_rgba(31,41,55,0.22)] hover:-translate-y-1 hover:bg-slate-950"
-                      }`}
+                        }`}
                     >
                       {visibleFavorites.length > 0 && (
                         <span className="absolute inset-y-[-30%] left-0 w-12 bg-white/25 blur-md animate-random-shine" />
@@ -660,11 +659,10 @@ export default function FavoritesPage() {
                 }}
                 onDragLeave={() => setDragOverFolderId(null)}
                 onDrop={() => handleDropToFolder("all")}
-                className={`mb-3 flex w-full items-center justify-between rounded-[20px] border p-3.5 text-left transition-all duration-300 ${
-                  activeFolderId === "all"
+                className={`mb-3 flex w-full items-center justify-between rounded-[20px] border p-3.5 text-left transition-all duration-300 ${activeFolderId === "all"
                     ? "border-[#D8C9B8] bg-[#FEFDFC] shadow-[0_12px_28px_rgba(92,69,57,0.10)]"
                     : "border-[#E8DED2] bg-[#F9F4EE]/76 hover:bg-[#FEFDFC]"
-                } ${dragOverFolderId === "all" ? "scale-[1.02] border-[#D8A63A] bg-[#FFF8E8] animate-folder-glow" : ""}`}
+                  } ${dragOverFolderId === "all" ? "scale-[1.02] border-[#D8A63A] bg-[#FFF8E8] animate-folder-glow" : ""}`}
               >
                 <span className="flex items-center gap-3">
                   <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#EFE4D8] text-[#8C6F5A]">
@@ -699,11 +697,10 @@ export default function FavoritesPage() {
                         }}
                         onDragLeave={() => setDragOverFolderId(null)}
                         onDrop={() => handleDropToFolder(folder.id)}
-                        className={`group/item relative rounded-[22px] border p-3 transition-all duration-500 ease-in-out transform ${
-                          activeFolderId === folder.id
+                        className={`group/item relative rounded-[22px] border p-3 transition-all duration-500 ease-in-out transform ${activeFolderId === folder.id
                             ? "border-[#D8C9B8] bg-[#FEFDFC] shadow-[0_12px_28px_rgba(92,69,57,0.10)]"
                             : "border-[#E8DED2] bg-[#F9F4EE]/76 hover:bg-[#FEFDFC]"
-                        } ${dragOverFolderId === folder.id ? "scale-[1.02] border-[#D8A63A] bg-[#FFF8E8] animate-folder-glow" : ""}`}
+                          } ${dragOverFolderId === folder.id ? "scale-[1.02] border-[#D8A63A] bg-[#FFF8E8] animate-folder-glow" : ""}`}
                       >
                         {/* 폴더 순서 변경 버튼 패널 추가 */}
                         <div className="absolute right-3 top-3 flex flex-col gap-0.5 opacity-0 group-hover/item:opacity-100 transition-opacity duration-200 bg-white/90 p-1 rounded-xl shadow-sm border border-slate-100 z-10">
@@ -784,11 +781,10 @@ export default function FavoritesPage() {
                     if (event.key === "Enter") handleCreateFolder();
                   }}
                   placeholder="예: 제주 맛집"
-                  className={`mb-2 w-full rounded-2xl border bg-[#FEFDFC] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition-all placeholder:text-slate-300 ${
-                    folderError
+                  className={`mb-2 w-full rounded-2xl border bg-[#FEFDFC] px-4 py-3 text-sm font-bold text-slate-700 outline-none transition-all placeholder:text-slate-300 ${folderError
                       ? "border-red-300 focus:border-red-400 focus:ring-4 focus:ring-red-100"
                       : "border-[#E8DED2] focus:border-[#B88A62]/50 focus:ring-4 focus:ring-[#B88A62]/10"
-                  }`}
+                    }`}
                 />
 
                 {folderError && <p className="mb-3 px-1 text-xs font-black text-red-500">{folderError}</p>}
@@ -832,7 +828,7 @@ export default function FavoritesPage() {
                 </div>
               </div>
 
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#D8A63A]/35 bg-white/78 px-4 py-2 text-[12px] font-black text-[#8C6F5A] shadow-sm">                
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#D8A63A]/35 bg-white/78 px-4 py-2 text-[12px] font-black text-[#8C6F5A] shadow-sm">
                 오늘의 랜덤 추천
               </div>
 
@@ -932,25 +928,22 @@ export default function FavoritesPage() {
                           key={`${place.placeId}-${index}`}
                           type="button"
                           onClick={() => handleTogglePlaceInFolder(addPlaceFolder.id, place.placeId)}
-                          className={`animate-add-modal-card flex w-full items-start gap-3 rounded-[24px] border p-4 text-left transition-all hover:-translate-y-0.5 ${
-                            selected
+                          className={`animate-add-modal-card flex w-full items-start gap-3 rounded-[24px] border p-4 text-left transition-all hover:-translate-y-0.5 ${selected
                               ? "border-[#86C8E8]/60 bg-[#EAF7FF] shadow-[0_12px_30px_rgba(37,99,235,0.10)]"
                               : "border-[#E8DED2] bg-white/78 hover:border-[#BEE6CC] hover:bg-[#F2FBF6]"
-                          }`}
+                            }`}
                           style={{ animationDelay: `${Math.min(index * 24, 180)}ms` }}
                         >
-                          <div className={`mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-all ${
-                            selected ? "bg-[#2563EB] text-white" : "bg-[#EFE4D8] text-[#7A665A]"
-                          }`}>
+                          <div className={`mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-all ${selected ? "bg-[#2563EB] text-white" : "bg-[#EFE4D8] text-[#7A665A]"
+                            }`}>
                             {selected ? <CheckCircle2 size={21} /> : <MapPin size={20} />}
                           </div>
 
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-3">
                               <h3 className="line-clamp-1 text-base font-black text-slate-800">{place.name}</h3>
-                              <span className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-black ${
-                                selected ? "bg-white/80 text-[#2563EB]" : "bg-[#F9F7F2] text-slate-400"
-                              }`}>
+                              <span className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-black ${selected ? "bg-white/80 text-[#2563EB]" : "bg-[#F9F7F2] text-slate-400"
+                                }`}>
                                 {selected ? "추가됨" : "추가"}
                               </span>
                             </div>
@@ -983,9 +976,38 @@ export default function FavoritesPage() {
         </div>
       </div>
 
-      <footer className="relative z-10 mt-16 border-t border-[#D7D3C8]/70 bg-[#EFECE5]/74 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-8 py-5 text-center">
-          <p className="text-[12px] font-bold text-[#000000] uppercase tracking-widest">여행 돋보기 • 즐겨찾기</p>
+      <footer className="relative z-10 mt-20 border-t border-[#D7D3C8]/70 bg-[#EFECE5]/88 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-8 py-7">
+          <div className="flex flex-col items-center justify-center gap-2 text-center">
+            <div className="flex items-center gap-3">
+              <div className="h-px w-10 bg-gradient-to-r from-transparent to-[#B88A62]" />
+              <div className="flex items-center gap-2 rounded-full border border-[#D8C9B8] bg-white/70 px-4 py-2 shadow-sm">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FFF4D6] shadow-inner">
+                  <Star
+                    size={13}
+                    className="fill-[#D8A63A] text-[#B8861D]"
+                    strokeWidth={2.4}
+                  />
+                </div>
+
+                <span className="text-sm font-black tracking-wide text-slate-800">
+                  여행 돋보기
+                </span>
+
+                <span className="text-[#B9AAA0]">•</span>
+
+                <span className="text-sm font-bold text-[#7A665A]">
+                  즐겨찾기
+                </span>
+              </div>
+
+              <div className="h-px w-10 bg-gradient-to-l from-transparent to-[#B88A62]" />
+            </div>
+
+            <p className="text-[11px] font-semibold tracking-wide text-[#9C877F]">
+              © 2026 캡스톤디자인 3조 코더사이저
+            </p>
+          </div>
         </div>
       </footer>
     </div>

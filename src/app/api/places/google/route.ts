@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Google Places API 키가 설정되지 않았습니다." }, { status: 500 });
   }
 
+
   const query = request.nextUrl.searchParams.get("query");
   const minRating = parseFloat(request.nextUrl.searchParams.get("minRating") || "3.5");
   const minReviews = parseInt(request.nextUrl.searchParams.get("minReviews") || "10");

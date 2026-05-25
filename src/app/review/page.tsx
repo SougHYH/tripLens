@@ -15,6 +15,7 @@ import {
   Loader2,
   Building,
   Lightbulb,
+  Bookmark,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -73,7 +74,7 @@ function ReviewContent() {
     {
       role: "assistant",
       content: `${query ? `'${query}'` : "이 장소"
-        }에 대해 무엇이든 물어보세요!\n예: '주차장 있어?', '아이랑 가기 좋아?'`,
+        }에 대해 무엇이든 물어보세요!`,
     },
   ]);
 
@@ -213,7 +214,7 @@ function ReviewContent() {
               setMessages([
                 {
                   role: "assistant",
-                  content: `${query ? `'${query}'` : "이 장소"}에 대해 무엇이든 물어보세요!\n예: '주차장 있어?', '아이랑 가기 좋아?'`,
+                  content: `${query ? `'${query}'` : "이 장소"}에 대해 무엇이든 물어보세요!`,
                 },
                 ...history
               ]);
@@ -321,7 +322,170 @@ function ReviewContent() {
   }
 
   return (
-    <div className="flex h-screen w-full bg-[#EFECE5] text-slate-950 font-sans tracking-tight overflow-hidden relative">
+
+    // 기존
+    // <div className="flex h-screen w-full bg-[#EFECE5] text-slate-950 font-sans tracking-tight overflow-hidden relative">
+
+    // ---------배경 여기부터-------
+    <div className="flex h-screen w-full bg-transparent text-slate-950 font-sans tracking-tight overflow-hidden relative">
+
+      <style>{`
+        @keyframes scan { 0% { left: -10%; opacity: 0; } 50% { opacity: 1; } 100% { left: 110%; opacity: 0; } }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.5; } 100% { transform: scale(1.3); opacity: 0; } }
+        @keyframes plane-fly { 0% { transform: translateX(-20px) translateY(0); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateX(300px) translateY(-100px); opacity: 0; } }
+        @keyframes globe-rotate { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } 100% { transform: rotate(360deg) scale(1); } }
+        @keyframes random-pop { 0% { transform: scale(0.84) translateY(24px); opacity: 0; } 70% { transform: scale(1.04) translateY(-4px); opacity: 1; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+        @keyframes random-float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-12px) rotate(2deg); } }
+        @keyframes random-shine { 0% { transform: translateX(-130%) rotate(18deg); opacity: 0; } 35% { opacity: 1; } 100% { transform: translateX(150%) rotate(18deg); opacity: 0; } }
+        @keyframes sparkle-spin { 0% { transform: rotate(0deg) scale(1); opacity: 0.55; } 50% { transform: rotate(180deg) scale(1.22); opacity: 1; } 100% { transform: rotate(360deg) scale(1); opacity: 0.55; } }
+        @keyframes shuffle-bounce { 0%, 100% { transform: translateY(0) rotate(0deg); } 30% { transform: translateY(-5px) rotate(-8deg); } 60% { transform: translateY(3px) rotate(7deg); } }
+        @keyframes folder-panel-in { 0% { transform: translateX(18px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+        @keyframes list-soft-in { 0% { transform: translateY(14px); opacity: 0; filter: blur(3px); } 100% { transform: translateY(0); opacity: 1; filter: blur(0); } }
+        @keyframes folder-glow { 0%, 100% { box-shadow: 0 18px 45px rgba(92,69,57,0.08); } 50% { box-shadow: 0 24px 60px rgba(92,69,57,0.14); } }
+        @keyframes sort-panel-pulse { 0%, 100% { box-shadow: 0 6px 16px rgba(31,41,55,0.06); } 50% { box-shadow: 0 12px 28px rgba(31,41,55,0.11); } }
+        @keyframes sort-text-pop { 0% { transform: scale(0.96); } 60% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes add-place-glow { 0%, 100% { box-shadow: 0 8px 18px rgba(79,139,105,0.04); } 50% { box-shadow: 0 14px 30px rgba(37,99,235,0.14); } }
+        @keyframes add-place-icon { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-2px) rotate(-8deg); } }
+        @keyframes add-modal-card { 0% { transform: translateY(10px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+
+        .animate-scan { animation: scan 2s linear infinite; }
+        .animate-pulse-ring { animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-plane { animation: plane-fly 3s infinite ease-in-out; }
+        .animate-globe { animation: globe-rotate 4s linear infinite; }
+        .animate-random-pop { animation: random-pop 0.52s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+        .animate-random-float { animation: random-float 3s ease-in-out infinite; }
+        .animate-random-shine { animation: random-shine 1.45s ease-in-out infinite; }
+        .animate-sparkle-spin { animation: sparkle-spin 2.4s linear infinite; }
+        .animate-shuffle-bounce { animation: shuffle-bounce 0.52s ease-in-out infinite; }
+        .animate-folder-panel-in { animation: folder-panel-in 0.34s ease-out both; }
+        .animate-list-soft-in { animation: list-soft-in 0.38s ease-out both; }
+        .animate-folder-glow { animation: folder-glow 3s ease-in-out infinite; }
+        .animate-sort-panel-pulse { animation: sort-panel-pulse 2.8s ease-in-out infinite; }
+        .animate-sort-text-pop { animation: sort-text-pop 0.24s ease-out both; }
+        .animate-add-place-glow { animation: add-place-glow 2.2s ease-in-out infinite; }
+        .animate-add-place-icon { animation: add-place-icon 1.2s ease-in-out infinite; }
+        .animate-add-modal-card { animation: add-modal-card 0.24s ease-out both; }
+
+        .folder-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: #CDBBA8 rgba(249, 244, 238, 0.72);
+        }
+
+        .folder-scroll::-webkit-scrollbar { width: 10px; }
+        .folder-scroll::-webkit-scrollbar-track {
+          background: rgba(249, 244, 238, 0.72);
+          border-radius: 999px;
+          margin: 10px 0;
+        }
+        .folder-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #DCCDBC 0%, #BFA994 100%);
+          border: 3px solid rgba(249, 244, 238, 0.92);
+          border-radius: 999px;
+        }
+        .folder-scroll::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #CBB7A2 0%, #A98F7B 100%);
+        }
+        .folder-scroll::-webkit-scrollbar-corner { background: transparent; }
+
+        .map-paper {
+          background:
+            radial-gradient(circle at 18% 16%, rgba(255,255,255,0.74), transparent 28%),
+            radial-gradient(circle at 82% 20%, rgba(221,183,150,0.34), transparent 30%),
+            radial-gradient(circle at 68% 82%, rgba(97,126,110,0.16), transparent 32%),
+            linear-gradient(135deg, #f6eee5 0%, #eadfd4 50%, #f5eadf 100%);
+        }
+
+        .lens {
+          box-shadow:
+            inset 10px 10px 26px rgba(92, 69, 57, 0.18),
+            inset -10px -10px 22px rgba(255, 255, 255, 0.72),
+            0 26px 70px rgba(72, 50, 42, 0.24);
+        }
+
+        .photo-rich {
+          filter: saturate(1.13) contrast(1.07) brightness(0.98);
+        }
+      `}</style>
+
+      <div className="fixed inset-0 map-paper pointer-events-none" />
+
+      <div className="fixed inset-0 pointer-events-none z-[1] -translate-y-[50px]">
+        <svg className="w-full h-full" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <pattern id="mainGrid" width="96" height="96" patternUnits="userSpaceOnUse">
+              <path d="M 96 0 L 0 0 0 96" fill="none" stroke="#b9aaa0" strokeWidth="1.4" opacity="0.46" />
+            </pattern>
+            <filter id="routeShadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="8" stdDeviation="7" floodColor="#5b4136" floodOpacity="0.18" />
+            </filter>
+          </defs>
+
+          <rect width="1600" height="1000" fill="url(#mainGrid)" />
+
+          <g opacity="0.3" fill="none" stroke="#9a887d" strokeLinecap="round">
+            <path d="M-70,110 C25,80 36,155 95,118 C145,88 154,40 220,58 C280,75 270,140 352,116" strokeWidth="2" />
+            <path d="M-60,770 C38,720 80,832 160,778 C248,718 250,650 365,686 C445,710 452,805 560,760" strokeWidth="2" />
+            <path d="M1280,36 C1362,112 1478,26 1532,92 C1590,165 1478,198 1538,250 C1592,298 1665,248 1692,330" strokeWidth="2" />
+            <path d="M1215,870 C1305,815 1372,906 1448,850 C1520,796 1585,812 1668,748" strokeWidth="2" />
+          </g>
+
+          <g filter="url(#routeShadow)" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M-70 235 C55 235 170 235 275 235 C365 235 420 290 420 380 C420 468 430 535 407 594 C386 648 356 674 316 692 C298 700 281 706 268 713 C210 734 172 782 118 806 C58 833 -2 860 -60 886" stroke="#9C877F" strokeWidth="16" />
+            <path d="M460 104 C555 104 612 154 650 225 C684 288 716 353 752 415 C780 468 830 498 890 498 C970 498 1050 498 1125 498 C1180 498 1218 475 1248 430 C1278 386 1308 339 1338 294 C1376 236 1430 218 1496 218 C1560 218 1625 218 1690 218" stroke="#B88A62" strokeWidth="16" />
+            <path d="M570 1010 C604 940 632 884 662 835 C690 780 732 752 792 752 C838 752 885 752 930 752 C985 752 1024 724 1048 675 C1068 633 1086 595 1106 560 C1136 500 1185 470 1252 470 C1302 470 1360 470 1410 470 C1505 470 1600 470 1690 470" stroke="#8C6F5A" strokeWidth="16" />
+          </g>
+
+
+          <g opacity="0.24" stroke="#8c7b72" strokeWidth="2" fill="none">
+            <path d="M235 130 H420 M235 130 V315" />
+            <path d="M1250 105 H1455 M1455 105 V305" />
+            <path d="M1125 835 C1185 800 1238 845 1294 812 C1356 776 1412 818 1470 790 C1528 762 1580 786 1645 748" />
+            <path d="M1175 888 C1230 858 1286 902 1342 868 C1396 836 1448 872 1505 842 C1565 810 1618 834 1685 798" />
+          </g>
+        </svg>
+      </div>
+
+      <div className="fixed inset-0 pointer-events-none z-[2] hidden lg:block">
+        <Star size={152} className="absolute left-[6%] top-[32%] rotate-[-14deg] fill-[#D8A63A] text-[#B8861D] opacity-30 drop-shadow-[0_18px_34px_rgba(86,64,28,0.18)]" strokeWidth={1.35} />
+        <Star size={124} className="absolute right-[15%] bottom-[15%] rotate-[10deg] fill-[#E7BE63] text-[#B8861D] opacity-28 drop-shadow-[0_18px_34px_rgba(86,64,28,0.16)]" strokeWidth={1.35} />
+        <Star size={118} className="absolute left-[37%] bottom-[18%] rotate-[-8deg] fill-[#C89535] text-[#8C6F5A] opacity-24 drop-shadow-[0_18px_34px_rgba(86,64,28,0.14)]" strokeWidth={1.35} />
+        <Star size={194} className="absolute right-[32%] top-[19%] rotate-[18deg] fill-[#F0C969] text-[#B88A62] opacity-24 drop-shadow-[0_18px_34px_rgba(86,64,28,0.14)]" strokeWidth={1.35} />
+      </div>
+
+      <div className="fixed inset-0 pointer-events-none z-[2] hidden lg:block">
+        <div className="absolute left-[19%] top-[11%] h-64 w-64 rounded-full border-[10px] border-[#9C877F]/85 bg-white/16 lens overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=700&q=80" alt="" className="photo-rich h-full w-full object-cover opacity-90" />
+          <div className="absolute inset-0 bg-[#f4e6dc]/12" />
+        </div>
+        <div className="absolute left-[16.8%] top-[42%] text-[72px] font-black tracking-tighter text-[#7e7773]/32">여행지</div>
+        <div className="absolute left-[29.2%] top-[45%] flex h-20 w-20 items-center justify-center rounded-full bg-[#8C6F5A] shadow-[0_18px_45px_rgba(140,111,90,0.35)]">
+          <MapPin size={38} className="text-white" strokeWidth={2.6} />
+        </div>
+
+        <div className="absolute right-[3.4%] top-[14%] h-[350px] w-[350px] rounded-full border-[16px] border-[#c4b0a5]/90 bg-white/16 lens overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80" alt="" className="photo-rich h-full w-full object-cover opacity-84" />
+          <div className="absolute inset-0 bg-[#f1ded3]/24" />
+          <div className="absolute inset-[64px] rounded-full border-[16px] border-[#a98f87]/42 border-b-transparent" />
+        </div>
+        <div className="absolute right-[20%] top-[20%] text-[72px] font-black tracking-tighter text-[#7e7773]/32">호텔</div>
+
+        <div className="absolute left-[46%] bottom-[4.5%] h-56 w-56 rounded-full border-[10px] border-[#c4b0a5]/90 bg-white/14 lens overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80" alt="" className="photo-rich h-full w-full object-cover opacity-86" />
+          <div className="absolute inset-0 bg-[#f4e6dc]/18" />
+          <div className="absolute inset-[48px] rounded-full border-[12px] border-[#a98f87]/42 border-b-transparent" />
+        </div>
+        <div className="absolute left-[48.5%] bottom-[25%] text-[64px] font-black tracking-tighter text-[#7e7773]/30">식당</div>
+
+        <div className="absolute right-[2%] top-[41%] h-24 w-24 rounded-full bg-[#9C877F]/36 blur-sm" />
+        <div className="absolute left-[24%] bottom-[2%] h-28 w-28 rounded-full bg-[#9C877F]/26 blur-sm" />
+      </div>
+
+      <div className="fixed inset-0 pointer-events-none z-[3] bg-gradient-to-b from-[#F0E8DE]/58 via-[#F0E8DE]/18 to-[#F0E8DE]/68" />
+      <div className="fixed left-1/2 top-[92px] z-[4] h-60 w-[760px] max-w-[92vw] -translate-x-1/2 rounded-full bg-[#f3ebe2]/72 blur-3xl pointer-events-none" />
+
+      {/* ------여기까지 배경------- */}
+
+
 
       {/* ───────────────────────────────────── */}
       {/* 로그인 유도 모달 */}
@@ -373,7 +537,7 @@ function ReviewContent() {
       {/* [좌측] 리뷰 분석 영역 */}
       <section className="w-full lg:w-[60%] h-full flex flex-col z-10">
         {/* 홈 화면으로 가는 로고 + 상단 바 */}
-        <div className="px-12 py-5 border-b border-[#dcd9d0] bg-[#EFECE5]/80 backdrop-blur-sm z-20 flex items-center justify-between">
+        <div className="px-12 py-5 border-b border-[#EAE6DC] bg-[#FEFDFC]/90 backdrop-blur-sm z-20 flex items-center justify-between shadow-[0_4px_24px_rgba(92,69,57,0.04)]">
           <Link href="/">
             <span className="text-2xl font-black text-slate-950 tracking-tighter hover:opacity-70 transition-opacity">
               여행 돋보기
@@ -430,14 +594,15 @@ function ReviewContent() {
 
                       <button
                         onClick={toggleFavorite}
-                        className="flex items-center justify-center p-1.5 rounded-full hover:bg-slate-100 transition-all active:scale-90 focus:outline-none"
+                        className="flex items-center justify-center p-2 rounded-full bg-white/85 backdrop-blur-sm border border-[#EAE6DC] shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:bg-white hover:border-[#9D8F7B]/40 transition-all active:scale-90 focus:outline-none"
                         aria-label="즐겨찾기 추가"
                       >
-                        <Star
-                          size={30}
+
+                        <Bookmark
+                          size={31}
                           strokeWidth={isFavorite ? 1.5 : 2}
                           className={`transition-all duration-300 ${isFavorite
-                            ? "fill-amber-400 text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]"
+                            ? "fill-[#9D8F7B] text-[#9D8F7B] drop-shadow-[0_2px_6px_rgba(157,143,123,0.3)]"
                             : "text-slate-300 hover:text-slate-400"
                             }`}
                         />
@@ -563,7 +728,6 @@ function ReviewContent() {
                   </div>
 
 
-
                   <h3 className="text-xl font-bold text-slate-900 mb-8 flex items-center gap-2">
                     <span className="bg-blue-500 text-white p-2 rounded-lg text-sm">
                       ✈️
@@ -618,7 +782,6 @@ function ReviewContent() {
                   </div> */}
 
 
-
                   {/* 가로 정렬 */}
                   <div className="grid grid-cols-3 mt-8 divide-x divide-slate-200/70">
                     {analysis.summary[0] && (
@@ -663,7 +826,6 @@ function ReviewContent() {
                       </div>
                     )}
                   </div>
-
 
 
                   {/* 가로 정렬 다른 버전 */}
@@ -713,70 +875,6 @@ function ReviewContent() {
                       </div>
                     )}
                   </div> */}
-
-
-                  {/* 기존 */}
-                  {/* <div className="space-y-8">
-                    {analysis.summary &&
-                      analysis.summary.length > 0 ? (
-                      <>
-                        {analysis.summary[0] && (
-                          <div className="flex flex-col items-start gap-3">
-                            <h4 className="text-[13px] font-bold text-[#8B7B6B] bg-[#F5F1E8] w-fit px-4 py-1.5 rounded-full tracking-wide">
-                              ✨ 분위기
-                            </h4>
-
-                            <p className="text-slate-700 text-[17px] leading-relaxed font-medium">
-                              {analysis.summary[0]}
-                            </p>
-                          </div>
-                        )}
-
-                        {analysis.summary[1] && (
-                          <div className="flex flex-col items-start gap-3">
-                            <h4 className="text-[13px] font-bold text-[#8B7B6B] bg-[#F5F1E8] w-fit px-4 py-1.5 rounded-full tracking-wide">
-                              🏢 시설&서비스
-                            </h4>
-
-                            <p className="text-slate-700 text-[17px] leading-relaxed font-medium">
-                              {analysis.summary[1]}
-                            </p>
-                          </div>
-                        )}
-
-                        {analysis.summary[2] && (
-                          <div className="flex flex-col items-start gap-3">
-                            <h4 className="text-[13px] font-bold text-[#8B7B6B] bg-[#F5F1E8] w-fit px-4 py-1.5 rounded-full tracking-wide">
-                              💡 꿀팁 
-                            </h4>
-
-                            <p className="text-slate-700 text-[17px] leading-relaxed font-medium">
-                              {analysis.summary[2]}
-                            </p>
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <p className="text-slate-400">
-                        요약 데이터를 불러오는 중입니다...
-                      </p>
-                    )}
-                  </div> */}
-
-
-                  {/* 기존 */}
-                  {/* {analysis.tags && (
-                    <div className="mt-10 flex flex-wrap gap-2.5 pt-8 border-t border-slate-50">
-                      {analysis.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs font-bold text-slate-400 bg-slate-50 px-4 py-2 rounded-full hover:bg-slate-100 transition-colors cursor-default"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )} */}
 
 
                   {analysis.tags && (

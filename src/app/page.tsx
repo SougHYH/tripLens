@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, MapPin, Bed, Utensils, HelpCircle, Sparkles, MessageSquare, Map, ChevronRight, ChevronLeft, Loader2 } from "lucide-react";
+import { Search, MapPin, Bed, Utensils, HelpCircle, Sparkles, MessageSquare, Map, ChevronRight, ChevronLeft, Loader2, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import SearchBar from "@/components/common/SearchBar";
 import Link from "next/link";
@@ -180,7 +180,7 @@ export default function Home() {
       )}
 
       {/* 네비게이션 */}
-      <nav className="flex items-center justify-between p-6 px-12 border-b border-[#D7D3C8] bg-[#EFECE5]/80 backdrop-blur-md sticky top-0 z-50 text-left">
+      <nav className="flex items-center justify-between p-6 px-12 border-b border-[#EAE6DC] bg-[#FEFDFC]/90 backdrop-blur-md sticky top-0 z-50 text-left shadow-[0_4px_24px_rgba(92,69,57,0.04)]">
         <div className="text-2xl font-black tracking-tighter text-slate-900">여행 돋보기</div>
         <div className="flex items-center space-x-6 text-[13px] font-bold text-slate-500">
           {isLoggedIn ? (
@@ -194,6 +194,8 @@ export default function Home() {
         </div>
       </nav>
 
+
+
       {/* 히어로 섹션 */}
       <div className="relative flex-1 w-full flex justify-center items-center">
         <div className="relative aspect-[16/9] w-full bg-center" style={{ backgroundImage: "url('/images/map10.png')", backgroundSize: '100% 100%', height: 'calc(100vh - 80px)' }}>
@@ -203,7 +205,7 @@ export default function Home() {
               <div className="flex flex-col items-center gap-[0.2vw] text-slate-900/100 font-black">
                 <Search className="w-[2.5vw] h-[2.5vw]" strokeWidth={4} />
                 <div className="text-[0.9vw] tracking-tighter leading-tight text-center uppercase">
-                  AI 장소 리뷰<br /> 
+                  AI 장소 리뷰<br />
                   분석 완료!<br /><span className="text-[1vw] text-slate-900/100">Completed</span></div>
               </div>
               <div className="absolute inset-[0.4vw] border-[0.15vw] border-slate-900/90 rounded-[1vw]"></div>
@@ -245,35 +247,143 @@ export default function Home() {
         </div>
       </div>
 
+
+
+
       {/* 추천 장소 섹션 */}
-      <section className="w-full bg-[#EFECE5] px-12 py-20 z-10 relative border-t border-[#D7D3C8]">
-        <div className="max-w-6xl mx-auto">
+
+      {/* 기존 */}
+      {/* <section className="w-full bg-[#EFECE5] px-12 py-20 z-10 relative border-t border-[#D7D3C8]"> */}
+
+
+
+
+      <section className="w-full px-12 pt-10 pb-20 z-10 relative border-t border-[#D7D3C8] overflow-hidden bg-transparent min-h-[800px]">
+
+        <style>{`
+    @keyframes scan { 0% { left: -10%; opacity: 0; } 50% { opacity: 1; } 100% { left: 110%; opacity: 0; } }
+    @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.5; } 100% { transform: scale(1.3); opacity: 0; } }
+    @keyframes plane-fly { 0% { transform: translateX(-20px) translateY(0); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateX(300px) translateY(-100px); opacity: 0; } }
+    @keyframes globe-rotate { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } 100% { transform: rotate(360deg) scale(1); } }
+    @keyframes random-pop { 0% { transform: scale(0.84) translateY(24px); opacity: 0; } 70% { transform: scale(1.04) translateY(-4px); opacity: 1; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+    @keyframes random-float { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-12px) rotate(2deg); } }
+    @keyframes random-shine { 0% { transform: translateX(-130%) rotate(18deg); opacity: 0; } 35% { opacity: 1; } 100% { transform: translateX(150%) rotate(18deg); opacity: 0; } }
+    @keyframes sparkle-spin { 0% { transform: rotate(0deg) scale(1); opacity: 0.55; } 50% { transform: rotate(180deg) scale(1.22); opacity: 1; } 100% { transform: rotate(360deg) scale(1); opacity: 0.55; } }
+    
+    .lens {
+      box-shadow: inset 10px 10px 26px rgba(92, 69, 57, 0.18), inset -10px -10px 22px rgba(255, 255, 255, 0.72), 0 26px 70px rgba(72, 50, 42, 0.24);
+    }
+    .photo-rich {
+      filter: saturate(1.13) contrast(1.07) brightness(0.98);
+    }
+    .map-paper-section {
+      background: radial-gradient(circle at 18% 16%, rgba(255,255,255,0.74), transparent 28%), radial-gradient(circle at 82% 20%, rgba(221,183,150,0.34), transparent 30%), radial-gradient(circle at 68% 82%, rgba(97,126,110,0.16), transparent 32%), linear-gradient(135deg, #f6eee5 0%, #eadfd4 50%, #f5eadf 100%);
+    }
+  `}</style>
+
+        <div className="absolute top-0 left-0 w-full h-[1100px] overflow-hidden pointer-events-none z-0 ">
+          <div className="absolute inset-0 map-paper-section" />
+
+          <div className="absolute inset-0 opacity-60 -translate-y-[30px] -translate-x-[30px]">
+            <svg className="w-full h-full" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <defs>
+                <pattern id="sectionGrid" width="96" height="96" patternUnits="userSpaceOnUse">
+                  <path d="M 96 0 L 0 0 0 96" fill="none" stroke="#b9aaa0" strokeWidth="1.4" opacity="0.46" />
+                </pattern>
+                <filter id="sectionRouteShadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="8" stdDeviation="7" floodColor="#5b4136" floodOpacity="0.18" />
+                </filter>
+              </defs>
+
+              <rect width="1600" height="1000" fill="url(#sectionGrid)" />
+
+              <g opacity="0.3" fill="none" stroke="#9a887d" strokeLinecap="round">
+                <path d="M-70,110 C25,80 36,155 95,118 C145,88 154,40 220,58 C280,75 270,140 352,116" strokeWidth="2" />
+                <path d="M-60,770 C38,720 80,832 160,778 C248,718 250,650 365,686 C445,710 452,805 560,760" strokeWidth="2" />
+                <path d="M1280,36 C1362,112 1478,26 1532,92 C1590,165 1478,198 1538,250 C1592,298 1665,248 1692,330" strokeWidth="2" />
+                <path d="M1215,870 C1305,815 1372,906 1448,850 C1520,796 1585,812 1668,748" strokeWidth="2" />
+              </g>
+
+              <g filter="url(#sectionRouteShadow)" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M460 104 C555 104 612 154 650 225 C684 288 716 353 752 415 C780 468 830 498 890 498 C970 498 1050 498 1125 498 C1180 498 1218 475 1248 430 C1278 386 1308 339 1338 294 C1376 236 1430 218 1496 218 C1560 218 1625 218 1690 218" stroke="#B88A62" strokeWidth="16" />
+                <path d="M570 1010 C604 940 632 884 662 835 C690 780 732 752 792 752 C838 752 885 752 930 752 C985 752 1024 724 1048 675 C1068 633 1086 595 1106 560 C1136 500 1185 470 1252 470 C1302 470 1360 470 1410 470 C1505 470 1600 470 1690 470" stroke="#8C6F5A" strokeWidth="16" />
+              </g>
+
+              <g opacity="0.24" stroke="#8c7b72" strokeWidth="2" fill="none">
+                <path d="M235 130 H420 M235 130 V315" />
+                <path d="M1250 105 H1455 M1455 105 V305" />
+                <path d="M1125 835 C1185 800 1238 845 1294 812 C1356 776 1412 818 1470 790 C1528 762 1580 786 1645 748" />
+                <path d="M1175 888 C1230 858 1286 902 1342 868 C1396 836 1448 872 1505 842 C1565 810 1618 834 1685 798" />
+              </g>
+            </svg>
+          </div>
+
+          <div className="absolute inset-0 hidden lg:block -translate-y-[30px] -translate-x-[30px]">
+            <Star size={152} className="absolute left-[6%] top-[32%] rotate-[-14deg] fill-[#D8A63A] text-[#B8861D] opacity-30 drop-shadow-[0_18px_34px_rgba(86,64,28,0.18)]" strokeWidth={1.35} />
+            <Star size={124} className="absolute right-[15%] bottom-[15%] rotate-[10deg] fill-[#E7BE63] text-[#B8861D] opacity-28 drop-shadow-[0_18px_34px_rgba(86,64,28,0.16)]" strokeWidth={1.35} />
+            <Star size={118} className="absolute left-[37%] bottom-[18%] rotate-[-8deg] fill-[#C89535] text-[#8C6F5A] opacity-24 drop-shadow-[0_18px_34px_rgba(86,64,28,0.14)]" strokeWidth={1.35} />
+            <Star size={194} className="absolute right-[32%] top-[19%] rotate-[18deg] fill-[#F0C969] text-[#B88A62] opacity-24 drop-shadow-[0_18px_34px_rgba(86,64,28,0.14)]" strokeWidth={1.35} />
+
+            {/* <div className="absolute left-[19%] top-[11%] h-64 w-64 rounded-full border-[10px] border-[#9C877F]/85 bg-white/16 lens overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=700&q=80" alt="" className="photo-rich h-full w-full object-cover opacity-90" />
+              <div className="absolute inset-0 bg-[#f4e6dc]/12" />
+            </div> */}
+            {/* <div className="absolute left-[16.8%] top-[42%] text-[72px] font-black tracking-tighter text-[#7e7773]/20">여행지</div> */}
+            {/* <div className="absolute left-[29.2%] top-[45%] flex h-20 w-20 items-center justify-center rounded-full bg-[#8C6F5A] shadow-[0_18px_45px_rgba(140,111,90,0.35)]">
+              <MapPin size={38} className="text-white" strokeWidth={2.6} />
+            </div> */}
+
+            <div className="absolute right-[3.4%] top-[14%] h-[350px] w-[350px] rounded-full border-[16px] border-[#c4b0a5]/90 bg-white/16 lens overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=80" alt="" className="photo-rich h-full w-full object-cover opacity-84" />
+              <div className="absolute inset-0 bg-[#f1ded3]/24" />
+              <div className="absolute inset-[64px] rounded-full border-[16px] border-[#a98f87]/42 border-b-transparent" />
+            </div>
+            {/* <div className="absolute right-[20%] top-[20%] text-[72px] font-black tracking-tighter text-[#7e7773]/20">호텔</div> */}
+
+            <div className="absolute left-[46%] bottom-[4.5%] h-56 w-56 rounded-full border-[10px] border-[#c4b0a5]/90 bg-white/14 lens overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80" alt="" className="photo-rich h-full w-full object-cover opacity-86" />
+              <div className="absolute inset-0 bg-[#f4e6dc]/18" />
+              <div className="absolute inset-[48px] rounded-full border-[12px] border-[#a98f87]/42 border-b-transparent" />
+            </div>
+            <div className="absolute left-[48.5%] bottom-[25%] text-[64px] font-black tracking-tighter text-[#7e7773]/20">식당</div>
+
+            <div className="absolute right-[2%] top-[41%] h-24 w-24 rounded-full bg-[#9C877F]/36 blur-sm" />
+            <div className="absolute left-[24%] bottom-[2%] h-28 w-28 rounded-full bg-[#9C877F]/26 blur-sm" />
+          </div>
+
+          <div className="absolute inset-0 bg-gradient-to-b from-[#F0E8DE]/58 via-[#F0E8DE]/18 to-[#F0E8DE]/68" />
+          <div className="absolute left-1/2 top-[92px] z-[4] h-60 w-[760px] max-w-[92vw] -translate-x-1/2 rounded-full bg-[#f3ebe2]/72 blur-3xl" />
+        </div>
+
+        <div className="max-w-6xl mx-auto relative z-10">
 
           {/* 헤더 */}
-          <div className="mb-12">
-            <h2 className="text-5xl font-black text-slate-900 tracking-tighter leading-none">지역별<br/>추천 장소</h2>
+          <div className="mb-6">
+            <h2 className="flex flex-col gap-1 text-5xl font-black text-slate-900 tracking-tighter">
+              <span>지역별</span>
+              <span>추천 장소</span>
+            </h2>
           </div>
 
           {/* 필터 바 */}
-          <div className="border-b border-[#D7D3C8] mb-0">
+          <div className="mb-0.5">
             {/* 카테고리 + 도 선택 */}
-            <div className="flex items-center justify-between pb-5">
-              <div className="flex gap-7">
+            <div className="flex items-center justify-between pb-2">
+              <div className="flex gap-2">
                 {CATEGORIES.map((cat, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedCategory(idx)}
-                    className={`text-sm font-bold pb-5 -mb-5 transition-all border-b-2 ${
-                      selectedCategory === idx
-                        ? "text-slate-900 border-slate-900"
-                        : "text-slate-400 border-transparent hover:text-slate-600"
-                    }`}
+                    className={`flex items-center gap-1 px-3 py-2 rounded-full text-[12px] font-bold transition-all duration-200 ${selectedCategory === idx
+                      ? "bg-slate-900 text-white shadow-sm"
+                      : "bg-white/40 text-slate-500 hover:text-slate-800 hover:bg-white/80"
+                      }`}
                   >
                     {cat.icon} {cat.label}
                   </button>
                 ))}
               </div>
-              <div className="flex gap-1">
+              <div className="flex gap-1 bg-white/85 backdrop-blur-sm p-1 rounded-full border border-white/60 shadow-[0_4px_14px_rgba(92,69,57,0.04)]">
                 {Object.keys(REGION_DATA).map((province) => (
                   <button
                     key={province}
@@ -281,11 +391,10 @@ export default function Home() {
                       setSelectedProvince(province);
                       setSelectedRegion(REGION_DATA[province].length > 0 ? REGION_DATA[province][0] : province);
                     }}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
-                      selectedProvince === province
-                        ? "bg-slate-900 text-white"
-                        : "text-slate-400 hover:text-slate-700"
-                    }`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${selectedProvince === province
+                      ? "bg-slate-900 text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                      }`}
                   >
                     {province}
                   </button>
@@ -294,16 +403,15 @@ export default function Home() {
             </div>
             {/* 시/군 선택 */}
             {REGION_DATA[selectedProvince].length > 0 && (
-              <div className="flex gap-2 pb-4">
+              <div className="flex w-fit gap-0.5 mt-1 mb-3 bg-white/85 backdrop-blur-sm p-1 rounded-full border border-white/60 shadow-[0_4px_14px_rgba(92,69,57,0.04)]">
                 {REGION_DATA[selectedProvince].map((city) => (
                   <button
                     key={city}
                     onClick={() => setSelectedRegion(city)}
-                    className={`px-3 py-1.5 rounded-full text-xs transition-all duration-200 ${
-                      selectedRegion === city
-                        ? "bg-slate-100 text-slate-900 font-bold"
-                        : "text-slate-400 font-medium hover:text-slate-600"
-                    }`}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${selectedRegion === city
+                      ? "bg-slate-900 text-white shadow-sm"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                      }`}
                   >
                     {city}
                   </button>
@@ -311,6 +419,8 @@ export default function Home() {
               </div>
             )}
           </div>
+
+
 
           {/* 장소 카드 */}
           {isLoadingPlaces ? (
@@ -323,19 +433,19 @@ export default function Home() {
             </div>
           ) : (
             <div className="relative">
-              <div className="overflow-hidden border-b border-[#D7D3C8]">
+              <div className="overflow-hidden">
                 <div
-                  className="flex transition-transform duration-500 ease-in-out"
-                  style={{ transform: `translateX(-${currentIndex * (100 / PAGE_SIZE)}%)` }}
+                  className="flex transition-transform duration-500 ease-in-out gap-4"
+                  style={{ transform: `translateX(calc(-${currentIndex * (100 / PAGE_SIZE)}% - ${currentIndex * (16 / PAGE_SIZE)}px))` }}
                 >
-                  {popularPlaces.map((place, i) => (
+                  {popularPlaces.map((place) => (
                     <button
                       key={place.id}
                       onClick={() => router.push(`/review?q=${encodeURIComponent(place.displayName.text)}&id=${place.id}&address=${encodeURIComponent(place.shortFormattedAddress || place.formattedAddress)}`)}
-                      className={`relative bg-[#EFECE5] text-left hover:bg-white transition-colors duration-300 group overflow-hidden flex flex-col flex-shrink-0 ${i < popularPlaces.length - 1 ? "border-r border-[#D7D3C8]" : ""}`}
-                      style={{ width: `${100 / PAGE_SIZE}%` }}
+                      className="relative bg-white text-left rounded-[1.8rem] transition-all duration-300 group overflow-hidden flex flex-col flex-shrink-0 shadow-[0_4px_25px_rgba(0,0,0,0.03)] hover:shadow-[0_15px_35px_rgba(0,0,0,0.08)] hover:-translate-y-1"
+                      style={{ width: `calc(${100 / PAGE_SIZE}% - ${(PAGE_SIZE - 1) * 16 / PAGE_SIZE}px)` }}
                     >
-                      <div className="w-full h-40 overflow-hidden bg-slate-100 shrink-0">
+                      <div className="w-full h-44 overflow-hidden bg-slate-100 shrink-0">
                         {place.photoUrl ? (
                           <img src={place.photoUrl} alt={place.displayName.text} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         ) : (
@@ -344,22 +454,24 @@ export default function Home() {
                           </div>
                         )}
                       </div>
-                      <div className="px-7 py-6 flex flex-col flex-1">
-                        <div className="flex items-center justify-between mb-3">
-                          <p className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">{CATEGORIES[selectedCategory].label}</p>
-                          {place.rating && (
-                            <div className="flex items-center gap-1">
-                              <span className="text-amber-400 text-xs">★</span>
-                              <span className="text-xs font-bold text-slate-500">{place.rating.toFixed(1)}</span>
-                              <span className="text-[10px] text-slate-300 font-medium">({place.userRatingCount?.toLocaleString()})</span>
-                            </div>
-                          )}
+                      <div className="px-6 py-5 flex flex-col flex-1 justify-between">
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">{CATEGORIES[selectedCategory].label}</p>
+                            {place.rating && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-amber-400 text-xs">★</span>
+                                <span className="text-xs font-bold text-slate-600">{place.rating.toFixed(1)}</span>
+                                <span className="text-[10px] text-slate-400 font-medium">({place.userRatingCount?.toLocaleString()})</span>
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="font-black text-slate-900 text-lg mb-1 leading-snug line-clamp-1">{place.displayName.text}</h3>
+                          <p className="text-xs text-slate-400 font-medium leading-relaxed line-clamp-1">{place.shortFormattedAddress || place.formattedAddress}</p>
                         </div>
-                        <h3 className="font-black text-slate-900 text-lg mb-1.5 leading-snug line-clamp-1">{place.displayName.text}</h3>
-                        <p className="text-xs text-slate-400 font-medium leading-relaxed line-clamp-1">{place.shortFormattedAddress || place.formattedAddress}</p>
-                        <div className="mt-5 flex items-center gap-1.5">
-                          <span className="text-[11px] font-bold text-slate-300 group-hover:text-slate-600 transition-colors duration-300">리뷰 분석</span>
-                          <ChevronRight className="w-3 h-3 text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all duration-300" />
+                        <div className="mt-5 flex items-center gap-1">
+                          <span className="text-[11px] font-black text-slate-400 group-hover:text-slate-900 transition-colors duration-300">리뷰 분석</span>
+                          <ChevronRight className="w-3 h-3 text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 transition-all duration-300" />
                         </div>
                       </div>
                     </button>
@@ -385,6 +497,8 @@ export default function Home() {
                 </button>
               </div>
             </div>
+
+
           )}
         </div>
       </section>
@@ -393,13 +507,13 @@ export default function Home() {
       {showHelp && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#5C584F]/60 backdrop-blur-md animate-in fade-in duration-500" onClick={() => { setShowHelp(false); setActiveStep(null); }} />
-          
+
           <div className={`relative flex gap-4 transition-all duration-500 ease-in-out ${activeStep !== null ? 'max-w-4xl' : 'max-w-lg'} w-full`}>
             {/* 왼쪽 리스트 */}
             <div className="w-full max-w-lg bg-[#F9F7F2] rounded-[3rem] shadow-2xl border border-white/50 overflow-hidden text-left z-10 relative">
               {/* 자연스러운 그라데이션 라인 배치 */}
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-400 via-indigo-400 to-orange-400" />
-              
+
               <div className="p-10 pt-12 space-y-8">
                 <div className="text-center space-y-2">
                   <h3 className="text-3xl font-black text-slate-900 tracking-tight">서비스 이용 방법</h3>
@@ -412,8 +526,8 @@ export default function Home() {
                     { icon: <MessageSquare className="text-orange-500 w-5 h-5" />, title: "AI 질의응답" },
                     { icon: <Map className="text-slate-600 w-5 h-5" />, title: "상세 정보 확인" }
                   ].map((item, idx) => (
-                    <button 
-                      key={idx} 
+                    <button
+                      key={idx}
                       onClick={() => setActiveStep(idx)}
                       className={`flex items-center justify-between p-5 rounded-3xl border transition-all group ${activeStep === idx ? 'bg-slate-900 border-slate-900' : 'bg-white/50 border-[#D7D3C8]/30 hover:bg-white hover:translate-x-2'}`}
                     >
@@ -463,8 +577,8 @@ export default function Home() {
         <button onClick={() => setShowHelp(true)} className="relative flex items-center justify-center w-20 h-20 bg-slate-900 rounded-full shadow-[0_15px_30px_rgba(0,0,0,0.3)] transition-all duration-300 group-hover:bg-[#8C877B] active:scale-90">
           <div className="absolute inset-[-4px] border-2 border-dashed border-[#8C877B] rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-[spin_10s_linear_infinite] transition-opacity"></div>
           <div className="relative flex items-center justify-center transition-all duration-300 group-hover:-translate-y-1">
-             <div className="absolute w-3 h-1 bg-white rounded-full translate-x-4 translate-y-4 rotate-45 transition-all duration-300 group-hover:translate-x-5 group-hover:translate-y-5 group-hover:scale-125"></div>
-             <HelpCircle className="w-10 h-10 text-white transition-all duration-300 group-hover:scale-110" strokeWidth={2.5} />
+            <div className="absolute w-3 h-1 bg-white rounded-full translate-x-4 translate-y-4 rotate-45 transition-all duration-300 group-hover:translate-x-5 group-hover:translate-y-5 group-hover:scale-125"></div>
+            <HelpCircle className="w-10 h-10 text-white transition-all duration-300 group-hover:scale-110" strokeWidth={2.5} />
           </div>
           <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-white px-4 py-2 rounded-full shadow-lg border border-[#D7D3C8] opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 ease-out pointer-events-none flex items-center gap-2">
             <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
