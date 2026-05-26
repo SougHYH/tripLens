@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from "@/lib/supabase";
 import { Star, MapPin } from "lucide-react";
-import { addRecentPlace } from "@/lib/recentPlaces";
 import { getRecentPlaces, RecentPlace } from "@/lib/recentPlaces";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -55,7 +54,7 @@ export default function MyPage() {
         })
         .catch(() => setFavorites([]))
         .finally(() => setIsLoading(false));
-      setRecentPlaces(getRecentPlaces());
+      setRecentPlaces(getRecentPlaces(user.id));
     });
   }, []);
 
@@ -349,7 +348,6 @@ export default function MyPage() {
                       position: 'relative',
                     }}
                     onClick={() => {
-                      addRecentPlace({ id: item.placeId, name: item.name, address: item.address });
                       router.push(`/review?q=${encodeURIComponent(item.name)}&id=${encodeURIComponent(item.placeId)}&address=${encodeURIComponent(item.address)}&from=mypage`);
                     }}
                   >

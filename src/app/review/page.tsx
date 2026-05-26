@@ -17,7 +17,7 @@ import {
   Lightbulb,
   Bookmark,
 } from "lucide-react";
-
+import { addRecentPlace } from "@/lib/recentPlaces";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -182,6 +182,8 @@ function ReviewContent() {
 
   // 리뷰 분석 + 채팅 내역 통합 로드
   useEffect(() => {
+    // loadAllData() 함수 내부 — try 블록 시작 직후, 분석 API 호출 전에 배치
+
     const loadAllData = async () => {
       if (!query) {
         setIsLoadingAnalysis(false);
@@ -199,11 +201,23 @@ function ReviewContent() {
           setUserId(currentUserId);
         }
 
+        // ★ 상세 조회 진입 시 최근 본 여행지에 저장 (분석 성공 여부와 무관)
+        if (placeId) {
+          addRecentPlace(
+            {
+              id: placeId,
+              name: query,
+              address: address && address !== "undefined" ? address : "",
+            },
+            currentUserId ?? undefined
+          );
+        }
+
         // 리뷰 분석 데이터 가져오기
         const analysisData = await getReviewAnalysisByKeyword(query, placeId);
         setAnalysis(analysisData);
         setThumbnailUrl(analysisData.thumbnailUrl ?? null);
-
+      
         const targetPlaceId = placeId || analysisData?.placeId;
 
         // 즐겨찾기에서 넘어온 경우 채팅 내역 가져오기
