@@ -25,6 +25,13 @@ import {
   CheckCircle2,
   ChevronUp,
   ChevronDown,
+  LayoutGrid,
+  BookmarkMinus,
+  XCircle,
+  Layers3,
+  Library,
+  BookmarkX,
+  FolderKanban,
 } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -55,10 +62,16 @@ export default function FavoritesPage() {
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
   const [foldersHydrated, setFoldersHydrated] = useState(false);
 
-  const [toast, setToast] = useState<{ visible: boolean; lastItem: any | null }>({
+  const [toast, setToast] = useState<{
+    visible: boolean;
+    lastItem: any | null;
+    mode?: "delete" | "folder-remove";
+    message?: string;
+  }>({
     visible: false,
     lastItem: null,
   });
+  
 
   const folderStorageKey = useMemo(() => {
     return `travel-favorite-folders-${userId ?? "guest"}`;
@@ -220,6 +233,41 @@ export default function FavoritesPage() {
     setDraggedPlaceId(null);
     setDragOverFolderId(null);
   };
+  const handleRemovePlaceOnlyFromFolder = (
+  folderId: string,
+  place: any
+) => {
+  const targetFolder = folders.find((f) => f.id === folderId);
+
+  if (!targetFolder) return;
+
+  setFolders((prev) =>
+    prev.map((folder) => {
+      if (folder.id !== folderId) return folder;
+
+      return {
+        ...folder,
+        placeIds: folder.placeIds.filter(
+          (id) => id !== place.placeId
+        ),
+      };
+    })
+  );
+
+  setToast({
+    visible: true,
+    lastItem: null,
+    mode: "folder-remove",
+    message: `${targetFolder.name} 폴더에서 “${place.name}” 장소가 제거되었습니다.`,
+  });
+
+  setTimeout(() => {
+    setToast((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, 3000);
+};
 
   // 폴더 순서 변경 핸들러 추가
   const handleMoveFolderOrder = (index: number, direction: "up" | "down") => {
@@ -279,11 +327,46 @@ export default function FavoritesPage() {
   };
 
   // 3. 삭제 기능: UI에서 먼저 제거 후 서버에 DELETE 요청 (B: 속한 폴더 내부 및 랜덤 모달 상태 동기화 로직 추가)
+  // 3. 삭제 기능 수정
+  // - 전체 보기(all)에서 삭제 → 실제 즐겨찾기 삭제
+  // - 특정 폴더 내부에서 삭제 → 해당 폴더에서만 제거
   const handleDelete = (item: any) => {
+    // 폴더 내부에서 삭제하는 경우
+    if (activeFolderId !== "all") {
+      setFolders((prev) =>
+        prev.map((folder) => {
+          if (folder.id !== activeFolderId) return folder;
+
+          return {
+            ...folder,
+            placeIds: folder.placeIds.filter((id) => id !== item.placeId),
+          };
+        })
+      );
+
+      // 랜덤 추천 상태 동기화
+      if (randomItem?.placeId === item.placeId) {
+        const remainingItems = visibleFavorites.filter(
+          (f) => f.placeId !== item.placeId
+        );
+
+        if (remainingItems.length === 0) {
+          setRandomItem(null);
+          setShowRandomModal(false);
+          setIsShuffling(false);
+        }
+      }
+
+      return;
+    }
+    //3.
+    // 전체 즐겨찾기에서 삭제하는 경우
     const updated = favorites.filter((f) => f.placeId !== item.placeId);
+
     setToast({ visible: true, lastItem: item });
     setFavorites(updated);
 
+    // 모든 폴더에서도 제거
     setFolders((prev) =>
       prev.map((folder) => ({
         ...folder,
@@ -297,14 +380,24 @@ export default function FavoritesPage() {
       setIsShuffling(false);
     }
 
+    // 서버에서도 실제 삭제
     if (userId && item.placeId) {
       fetch(`${API_URL}/favorites/`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, place_id: item.placeId }),
+        body: JSON.stringify({
+          user_id: userId,
+          place_id: item.placeId,
+        }),
       });
     }
-    setTimeout(() => setToast((prev) => ({ ...prev, visible: false })), 3000);
+
+    setTimeout(() => {
+      setToast((prev) => ({
+        ...prev,
+        visible: false,
+      }));
+    }, 3000);
   };
 
   // 4. 실행 취소(복구): UI에 다시 추가 후 서버에 POST 요청
@@ -597,7 +690,26 @@ export default function FavoritesPage() {
                             <div className="relative z-10">
                               <div className="flex justify-between items-start mb-4">
                                 <div className="p-2.5 bg-[#F9F7F2] rounded-2xl text-[#4F8B69] group-hover:bg-slate-800 group-hover:text-white transition-all"><MapPin size={20} /></div>
-                                <button onClick={() => handleDelete(item)} className="p-2 text-slate-300 hover:text-red-500 transition-all"><Trash2 size={18} /></button>
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+
+                                    if (activeFolderId === "all") {
+                                      handleDelete(item);
+                                    } else {
+                                      handleRemovePlaceOnlyFromFolder(activeFolderId, item);
+                                    }
+                                  }}
+                                  className="group/delete relative overflow-hidden p-2 text-slate-300 transition-all hover:text-red-500"
+                                >
+                                  <span className="absolute inset-0 rounded-xl bg-red-100 opacity-0 transition-opacity duration-300 group-hover/delete:opacity-100" />
+
+                                  <Trash2
+                                    size={18}
+                                    className="relative z-10 transition-transform duration-300 group-hover/delete:scale-110"
+                                  />
+                                </button>
                               </div>
                               <h3 className="text-2xl font-black text-slate-800 mb-2 leading-tight">{item.name}</h3>
                               <p className="text-[14px] text-slate-400 font-medium line-clamp-2 min-h-[40px]">{item.address}</p>
@@ -737,7 +849,13 @@ export default function FavoritesPage() {
                             </span>
                             <span className="min-w-0">
                               <span className="block truncate text-sm font-black text-slate-800">{folder.name}</span>
-                              <span className="block text-[11px] font-bold text-[#9C877F]">{folder.placeIds.length}개 장소</span>
+                              <span className="block text-[11px] font-bold text-[#9C877F]">
+                                {
+                                  folder.placeIds.filter((id) =>
+                                    favorites.some((f) => f.placeId === id)
+                                  ).length
+                                }개 장소
+                              </span>
                             </span>
                           </span>
                           {activeFolderId === folder.id && <Check size={16} className="text-[#8C6F5A] shrink-0" />}
@@ -969,12 +1087,59 @@ export default function FavoritesPage() {
         </div>
       )}
 
-      <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] transition-all duration-500 ${toast.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"}`}>
-        <div className="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4">
-          <span className="text-sm font-bold text-red-400">삭제되었습니다.</span>
-          <button onClick={handleUndo} className="flex items-center gap-1.5 text-blue-400 font-black text-sm uppercase"><RotateCcw size={14} /> 실행취소</button>
+    <div
+      className={`fixed top-10 left-1/2 -translate-x-1/2 z-[200] transition-all duration-500 ${
+        toast.visible
+          ? "translate-y-0 opacity-100"
+          : "pointer-events-none translate-y-10 opacity-0"
+      }`}
+    >
+    <div className="group relative w-[min(92vw,440px)] overflow-hidden rounded-[32px] border border-white/50 bg-[#FDFDFC]/90 p-[1px] shadow-[0_20px_60px_-20px_rgba(58,46,38,0.12),0_0_0_1px_rgba(255,255,255,0.8)_inset] backdrop-blur-[48px] transition-all duration-500 hover:shadow-[0_25px_70px_-20px_rgba(58,46,38,0.18)]">
+      
+      {/* 모드별 상단 컬러 강조 */}
+      <div className={`absolute inset-x-0 top-0 h-[2px] ${toast.mode === "folder-remove" ? "bg-[#5A6D82]" : "bg-[#D46B5B]"} opacity-60`} />
+
+      <div className="relative flex items-center gap-5 px-6 py-5">
+        
+        {/* 아이콘: 더 세련된 얇은 라인 스타일 */}
+        <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[24px] shadow-sm transition-all duration-500 ${
+          toast.mode === "folder-remove"
+            ? "bg-[#E8EDF2] text-[#4A5D70]"
+            : "bg-[#FDF0EE] text-[#C95C4A]" 
+        }`}>
+          {toast.mode === "folder-remove" ? (
+            <FolderKanban size={26} strokeWidth={1.5} /> 
+          ) : (
+            <BookmarkX size={26} strokeWidth={1.5} />
+          )}
         </div>
+
+        {/* 텍스트 내용 */}
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-bold tracking-tight text-[#2D2826]">
+            {toast.mode === "folder-remove" ? "폴더가 제거되었습니다" : "즐겨찾기가 삭제되었습니다"}
+          </p>
+          <p className="mt-1 text-[13px] font-medium leading-[1.5] text-[#8C7E76]">
+            {toast.mode === "folder-remove" 
+                ? `"${toast.message}"` 
+                : "선택한 장소가 즐겨찾기 목록에서 안전하게 제거되었습니다."}
+          </p>
+        </div>
+
+        {/* 실행취소 버튼 */}
+        {toast.mode !== "folder-remove" && (
+          <button
+            onClick={handleUndo}
+            className="group/btn relative flex shrink-0 items-center gap-1.5 rounded-full border border-[#E8E4DF] bg-white px-5 py-2.5 text-[12px] font-bold text-[#5C5550] shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-[#D6C4B5] hover:bg-[#F9F7F5] hover:text-[#2D241E] active:scale-[0.96]"
+          >
+            <RotateCcw size={12} className="transition-transform duration-500 group-hover/btn:-rotate-180" />
+            되돌리기
+          </button>
+        )}
       </div>
+    </div>
+
+    </div>
 
       <footer className="relative z-10 mt-20 border-t border-[#D7D3C8]/70 bg-[#EFECE5]/88 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-8 py-7">
