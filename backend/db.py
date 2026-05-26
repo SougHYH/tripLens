@@ -19,7 +19,7 @@ def upsert_place(place: dict) -> dict:
     res = supabase.table("places").upsert({
         "place_id":      place.get("id") or place.get("place_id"),
         "name":          place.get("name", ""),
-        "address":       place.get("address", ""),
+        "address":       place.get("address") or "",
         "rating":        place.get("rating", 0.0),
         "review_count":  place.get("reviewCount") or place.get("review_count", 0),
         "tags":          place.get("tags", []),
