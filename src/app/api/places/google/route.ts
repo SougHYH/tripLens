@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export async function GET(request: NextRequest) {
   const apiKey = process.env.GOOGLE_PLACES_API_KEY;
@@ -6,13 +12,25 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Google Places API 키가 설정되지 않았습니다." }, { status: 500 });
   }
 
-
   const query = request.nextUrl.searchParams.get("query");
   const minRating = parseFloat(request.nextUrl.searchParams.get("minRating") || "3.5");
   const minReviews = parseInt(request.nextUrl.searchParams.get("minReviews") || "10");
 
   if (!query) {
     return NextResponse.json({ error: "query 파라미터가 필요합니다." }, { status: 400 });
+  }
+
+  const cacheKey = `${query}|${minRating}|${minReviews}`;
+
+  // 캐시 확인
+  const { data: cached } = await supabase
+    .from("places_search_cache")
+    .select("result")
+    .eq("query", cacheKey)
+    .single();
+
+  if (cached) {
+    return NextResponse.json(cached.result);
   }
 
   const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
@@ -68,5 +86,12 @@ export async function GET(request: NextRequest) {
     })
   );
 
-  return NextResponse.json({ places: placesWithPhotos });
+  const result = { places: placesWithPhotos };
+
+  // 캐시 저장
+  await supabase
+    .from("places_search_cache")
+    .upsert({ query: cacheKey, result, cached_at: new Date().toISOString() });
+
+  return NextResponse.json(result);
 }
