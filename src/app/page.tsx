@@ -548,7 +548,7 @@ export default function Home() {
                   <div className="relative space-y-8 z-10">
                     <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-[#FAF8F5] border border-[#E8E1D5]">
                       <div className="w-2 h-2 rounded-full bg-[#8C6F5A] animate-pulse"></div>
-                      <span className="text-[11px] font-bold uppercase tracking-widest text-[#8C6F5A]">가이드{activeStep + 1}</span>
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-[#8C6F5A]">가이드</span>
                     </div>
                     <h2 className="text-3xl font-black text-[#1A1C20] leading-tight">{helpDetails[activeStep as keyof typeof helpDetails].title}</h2>
                     <div className="space-y-6 pt-4">
