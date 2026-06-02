@@ -7,6 +7,7 @@ load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 MODEL = "gpt-4o-mini"
+MODEL_WEB_SEARCH = "gpt-4o-mini-search-preview"
 
 
 # ================================
@@ -183,3 +184,31 @@ async def chat_with_summary(
         "found_in_reviews": bool(result.get("found_in_reviews", True)),
         "answer": result.get("answer", ""),
     }
+
+
+# ================================
+# AI 채팅 (웹 검색 기반)
+# ================================
+async def chat_with_web_search(
+    place_name: str,
+    user_question: str,
+) -> str:
+    """
+    웹 검색을 활용해 장소 관련 추가 정보를 제공합니다.
+    리뷰 데이터에서 확인되지 않은 질문에 대해 호출됩니다.
+    """
+    prompt = f"'{place_name}'에 대해 다음 질문에 답해주세요: {user_question}"
+
+    response = client.chat.completions.create(
+        model=MODEL_WEB_SEARCH,
+        messages=[
+            {
+                "role": "system",
+                "content": f"당신은 '{place_name}' 장소에 대한 여행 도우미입니다. 웹 검색 결과를 바탕으로 질문에 친절하고 간결하게 답변해주세요.",
+            },
+            {"role": "user", "content": prompt},
+        ],
+        web_search_options={},
+    )
+
+    return response.choices[0].message.content

@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Query
 from datetime import datetime, timezone
 from models.review import ReviewAnalysis, ChatRequest, ChatResponse, SentimentBreakdown
 from services.scraper import get_reviews, search_places
-from services.ai import analyze_reviews, chat_with_summary
+from services.ai import analyze_reviews, chat_with_summary, chat_with_web_search
 from db import get_cached_review, save_review, upsert_place, get_or_create_qa_session, save_qa_message, get_qa_messages, get_place_by_name, save_raw_reviews
 
 router = APIRouter()
@@ -163,6 +163,16 @@ async def chat(request: ChatRequest):
         result = await chat_with_summary(cached, request.placeId, messages)
         reply = result["answer"]
         found_in_reviews = result["found_in_reviews"]
+
+        if not found_in_reviews:
+            user_question = next(
+                (m.content for m in reversed(request.messages) if m.role == "user"), ""
+            )
+            try:
+                web_answer = await chat_with_web_search(request.placeId, user_question)
+                reply = f"{reply}\n\n🌐 웹 검색 추가 정보\n{web_answer}"
+            except Exception as e:
+                print(f"[웹 검색 실패] {e}")
 
         if request.userId:
             try:
