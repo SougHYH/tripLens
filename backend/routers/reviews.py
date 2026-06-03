@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from models.review import ReviewAnalysis, ChatRequest, ChatResponse, SentimentBreakdown
 from services.scraper import get_reviews, search_places
 from services.ai import analyze_reviews, chat_with_summary, chat_with_web_search
-from db import get_cached_review, save_review, upsert_place, get_or_create_qa_session, save_qa_message, get_qa_messages, get_place_by_name, save_raw_reviews
+from db import get_cached_review, save_review, upsert_place, get_or_create_qa_session, save_qa_message, get_qa_messages, get_place_by_name, save_raw_reviews, get_place
 
 router = APIRouter()
 
@@ -160,7 +160,11 @@ async def chat(request: ChatRequest):
         cached = get_cached_review(request.placeId)
         if not cached:
             raise HTTPException(status_code=404, detail="리뷰 분석 데이터가 없습니다. 먼저 리뷰 분석을 실행해주세요.")
-        result = await chat_with_summary(cached, request.placeId, messages)
+
+        place_row = get_place(request.placeId)
+        place_name = (place_row or {}).get("name", request.placeId)
+
+        result = await chat_with_summary(cached, place_name, messages)
         reply = result["answer"]
         found_in_reviews = result["found_in_reviews"]
 
@@ -169,7 +173,7 @@ async def chat(request: ChatRequest):
                 (m.content for m in reversed(request.messages) if m.role == "user"), ""
             )
             try:
-                web_answer = await chat_with_web_search(request.placeId, user_question)
+                web_answer = await chat_with_web_search(place_name, user_question)
                 reply = f"{reply}\n\n🌐 웹 검색 추가 정보\n{web_answer}"
             except Exception as e:
                 print(f"[웹 검색 실패] {e}")
