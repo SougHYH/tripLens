@@ -204,7 +204,7 @@ async def chat_with_web_search(
         messages=[
             {
                 "role": "system",
-                "content": f"당신은 '{place_name}' 장소에 대한 여행 도우미입니다. 웹 검색 결과를 바탕으로 질문에 친절하고 간결하게 답변해주세요.",
+                "content": f"당신은 '{place_name}' 장소에 대한 여행 도우미입니다. 웹 검색 결과를 바탕으로 질문에 친절하고 구체적으로 답변해주세요. URL, 링크, 출처 표기는 절대 포함하지 마세요.",
             },
             {"role": "user", "content": prompt},
         ],
