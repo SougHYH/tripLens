@@ -208,7 +208,7 @@ async def chat_with_web_search(
             },
             {"role": "user", "content": prompt},
         ],
-        web_search_options={},
+        web_search_options={"search_context_size": "high"},
     )
 
     return response.choices[0].message.content
